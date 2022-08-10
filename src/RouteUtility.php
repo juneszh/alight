@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of the Alight package.
+ *
+ * (c) June So <alight@juneszh.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Alight;
+
+class RouteUtility
+{
+    private int $index;
+
+    public function __construct(int $index)
+    {
+        $this->index = $index;
+        return $this;
+    }
+
+    /**
+     * Send a Cache-Control header
+     * 
+     * @param int $maxAge
+     * @return RouteUtility 
+     */
+    public function cache(int $maxAge)
+    {
+        Route::$config[$this->index][__FUNCTION__] = $maxAge;
+        return $this;
+    }
+
+    /**
+     * Enable authorization verification
+     * 
+     * @return RouteUtility 
+     */
+    public function auth()
+    {
+        Route::$config[$this->index][__FUNCTION__] = true;
+        $this->cache(0);
+        return $this;
+    }
+
+    /**
+     * Set the cooldown time for the user's next request (authorization required)
+     * 
+     * @param int $second 
+     * @return RouteUtility 
+     */
+
+    public function cd(int $second)
+    {
+        Route::$config[$this->index][__FUNCTION__] = $second;
+        return $this;
+    }
+
+    /**
+     * Send a CORS header
+     * 
+     * @param mixed $origin true|*|{custom origin}
+     * @return RouteUtility 
+     */
+    public function cors($origin = true)
+    {
+        Route::$config[$this->index][__FUNCTION__] = $origin;
+        return $this;
+    }
+}
