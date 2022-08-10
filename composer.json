@@ -3,7 +3,6 @@
     "description": "Alight is a lightweight framework for PHP. Easily and quickly build high performance RESTful web applications.",
     "type": "library",
     "license": "MIT",
-    "minimum-stability": "stable",
     "keywords": [
         "php",
         "lightweight",
@@ -31,6 +30,7 @@
             "src/functions.php"
         ]
     },
+    "minimum-stability": "stable",
     "require": {
         "php": ">=7.4",
         "nikic/fast-route": "^1.3",

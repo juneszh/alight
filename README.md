@@ -22,7 +22,7 @@ Don’t have Composer? [Install Composer](https://getcomposer.org/download/) fir
 ```bash
 $ composer create-project juneszh/alight-project {YOUR_PROJECT}
 ```
-This project template contains common folder structure, suitable for MVC pattern.
+The project template contains common folder structure, suitable for MVC pattern, please refer to: [Alight Project](https://github.com/juneszh/alight-project).
 
 *It is easy to customize folders by modifying the configuration. But the following tutorials are based on the template configuration.*
 
@@ -561,10 +561,10 @@ return [
 ]);
 ```
 
-File: app/Controllers/Page.php
+File: app/Controllers/Pages.php
 ```php
 namespace ctr;
-class Page
+class Pages
 {
     public static function index()
     {
@@ -580,7 +580,7 @@ File: app/Views/hello.php
 
 File: config/route.php
 ```php
-Alight\Route::get('/', [ctr\Page::class, 'index']);
+Alight\Route::get('/', [ctr\Pages::class, 'index']);
 ```
 
 The project's homepage output would be:
