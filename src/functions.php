@@ -45,14 +45,7 @@ function start($config)
 
     ErrorHandler::init();
 
-    Request::$query = $_GET ?: [];
-    Request::$data = $_POST ?: [];
-    Request::$cookie = $_COOKIE ?: [];
-    if (in_array(Request::method(), ['POST', 'PUT', 'DELETE', 'PATCH']) && Request::isJson()) {
-        if (isJson(Request::body())) {
-            Request::$data = json_decode(Request::body(), true);
-        }
-    }
+    Request::init();
 
     Response::cors(false);
 

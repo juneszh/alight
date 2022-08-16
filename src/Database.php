@@ -36,13 +36,12 @@ class Database
     /**
      * Initializes the instance
      * 
-     * @param null|string $key 
+     * @param string $key 
      * @return Medoo 
      * @throws Exception 
      */
     public static function init(string $key = ''): Medoo
     {
-        $key = (string) $key;
         if (!isset(self::$instance[$key])) {
             $config = self::getConfig($key);
 
@@ -70,7 +69,7 @@ class Database
             throw new Exception('Missing database configuration.');
         }
 
-        if (isset($config['type']) && is_string($config['type'])) {
+        if (isset($config['type']) && !is_array($config['type'])) {
             $configDatabase = $config;
         } else {
             if ($key) {

@@ -17,8 +17,26 @@ class Request
 {
     public const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'TRACE', 'PATCH'];
     public static array $query;
+    public static array $body;
     public static array $data;
     public static array $cookie;
+
+    /**
+     * Initializes variables
+     * 
+     */
+    public static function init()
+    {
+        self::$query = $_GET ?: [];
+        self::$body = $_POST ?: [];
+        if (in_array(self::method(), ['POST', 'PUT', 'DELETE', 'PATCH']) && self::isJson()) {
+            if (isJson(self::body())) {
+                self::$body = json_decode(self::body(), true);
+            }
+        }
+        self::$data = array_replace_recursive(self::$query, self::$body);
+        self::$cookie = $_COOKIE ?: [];
+    }
 
     /**
      * Checks if it's an ajax request
@@ -77,8 +95,6 @@ class Request
         if ($method === null) {
             if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
                 $method = strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
-            } elseif (isset(Request::$query['_method'])) {
-                $method = strtoupper(Request::$query['_method']);
             } elseif (isset(Request::$data['_method'])) {
                 $method = strtoupper(Request::$data['_method']);
             } else {

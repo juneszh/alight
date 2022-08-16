@@ -194,7 +194,7 @@ class Cache
             throw new Exception('Missing cache configuration.');
         }
 
-        if (isset($config['type']) && is_string($config['type'])) {
+        if (isset($config['type']) && !is_array($config['type'])) {
             $configCache = $config;
         } else {
             if ($key) {
