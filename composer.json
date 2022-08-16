@@ -1,6 +1,6 @@
 {
     "name": "juneszh/alight",
-    "description": "Alight is a lightweight framework for PHP. Easily and quickly build high performance RESTful web applications.",
+    "description": "Alight is a light-weight framework for PHP. Easily and quickly build high performance RESTful web applications.",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -14,7 +14,7 @@
         "psr-16",
         "monolog",
         "whoops",
-        "job scheduler"
+        "job-scheduler"
     ],
     "authors": [
         {

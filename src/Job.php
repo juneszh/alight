@@ -46,7 +46,7 @@ class Job
      * @throws InvalidArgumentException 
      * @throws Exception 
      */
-    public static function scheduler($config, ?string $execCode = null, ?string $execJob = null)
+    public static function start($config, ?string $execCode = null, ?string $execJob = null)
     {
         Config::init($config);
         $timezone = Config::get('app', 'timezone');

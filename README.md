@@ -1,5 +1,5 @@
 # Alight
-Alight is a lightweight framework for php. Easily and quickly build high performance RESTful web applications. Out-of-the-box built-in routing, database, caching, error handling, logging and job scheduling libraries. Focus on creating solutions for the core process of web applications. Keep it simple and extensible.
+Alight is a light-weight framework for php. Easily and quickly build high performance RESTful web applications. Out-of-the-box built-in routing, database, caching, error handling, logging and job scheduling libraries. Focus on creating solutions for the core process of web applications. Keep simple and extensible.
 
 ## Requirements
 PHP 7.4+
@@ -74,7 +74,7 @@ Alight\start([
         'debug' => true,
         'timezone' => 'Europe/Kiev'
     ],
-    'route' => 'config/route.php',
+    'route' => 'config/routes/web.php',
     'database' => [
         'type' => 'mysql',
         'server' => '127.0.0.1',
@@ -91,7 +91,7 @@ See [Config.php](./src/Config.php) for details.
 ## Routing
 Before learning routing rules, you need to create a php file first that stores routing rules. Because the routing cache is updated or not, it is based on the modification time of the routing file. For example:
 
-File: config/route.php
+File: config/routes/web.php
 ```php
 Route::get('/', 'Controller::index');
 ```
@@ -99,9 +99,9 @@ Route::get('/', 'Controller::index');
 File: config/app.php
 ```php
 return [
-    'route' => 'config/route.php'
+    'route' => 'config/routes/web.php'
     // Also supports multiple files
-    // 'route' => ['config/home.php', config/user.php'] 
+    // 'route' => ['config/routes/web.php', config/routes/api.php'] 
 ];
 ```
 
@@ -110,11 +110,11 @@ By the way, the route configuration supports importing specified files for **sub
 return [
     'route' => [
         //Import on any request
-        '*' => 'config/route/root.php', 
+        '*' => 'config/routes/web.php', 
         //Import when requesting admin.yourdomain.com
-        'admin' => 'config/route/admin.php', 
+        'admin' => 'config/routes/admin.php', 
         //Import multiple files when requesting api.yourdomain.com
-        'api' => ['config/route/api.php', 'config/route/api_mobile.php'], 
+        'api' => ['config/routes/api.php', 'config/routes/api_mobile.php'], 
     ]
 ];
 ```
@@ -510,8 +510,27 @@ class Error
 ```
 
 ## Helpers
+
+### Project root path
+Alight provides `Alight\rootPath()` to standardize the format of file paths in project. 
+
+```php
+// Suppose the absolute path of the project is /var/www/html/my_project/
+Alight\rootPath('public/favicon.ico'); // /var/www/html/my_project/public/favicon.ico
+
+// Of course, you can also use absolute path files with the first character  '/'
+Alight\rootPath('/var/data/config/web.php');
+```
+
+The file paths in the configuration are all based on the `Alight\rootPath()`. For example:
+```php
+Alight\start([
+    'route' => 'config/routes/web.php',     // /var/www/html/my_project/config/routes/web.php
+    'job' => 'config/job.php'          // /var/www/html/my_project/config/job.php
+]);
+```
 ### API Response
-Alight provides `Alight\apiResponse()` to standardize the format of API Response. 
+Alight provides `Alight\Response::api()` to standardize the format of API Response. 
 ```php
 HTTP 200 OK
 
@@ -530,29 +549,45 @@ Status Definition:
 | 4xx  | 4xx   | Client errors |
 | 5xx  | 5xx   | Server errors |
 
-See [HTTP response status codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) for more http status.
-
-### Project root path
-Alight provides `Alight\rootPath()` to standardize the format of file paths in project. 
-
+For example:
 ```php
-// Suppose the absolute path of the project is /var/www/html/my_project/
-Alight\rootPath('public/favicon.ico'); // /var/www/html/my_project/public/favicon.ico
+Alight\Response::api(0, ['name' => 'alight']);
+// Response:
+// HTTP 200 OK
+//
+// {
+//     "error": 0,
+//     "message": "OK",
+//     "data": {
+//         "name": "alight"
+//     }
+// }
 
-// Of course, you can also use absolute path files with the first character  '/'
-Alight\rootPath('/var/data/config/web.php');
+Alight\Response::api(1001, 'Invalid request parameter.');
+// Response:
+// HTTP 200 OK
+//
+// {
+//     "error": 1001,
+//     "message": "Invalid request parameter.",
+//     "data": {}
+// }
+
+Alight\Response::api(500, 'Unable to connect database.');
+// Response:
+// HTTP 500 Internal Server Error
+//
+// {
+//     "error": 500,
+//     "message": "Unable to connect database.",
+//     "data": {}
+// }
 ```
 
-The file paths in the configuration are all based on the `Alight\rootPath()`. For example:
-```php
-Alight\start([
-    'route' => 'route.php',     // /var/www/html/my_project/route.php
-    'job' => 'job.php'          // /var/www/html/my_project/job.php
-]);
-```
+
 
 ### Views
-Alight provides `Alight\render()` to display a view template call the render method with the path of the template file and optional template data:
+Alight provides `Alight\Response::render()` to display a view template call the render method with the path of the template file and optional template data:
 
 File: config/app.php
 ```php
@@ -568,7 +603,7 @@ class Pages
 {
     public static function index()
     {
-        \Alight\render('hello.php', ['name' => 'Ben']);
+        \Alight\Response::render('hello.php', ['name' => 'Ben']);
     }
 }
 ```
@@ -578,7 +613,7 @@ File: app/Views/hello.php
 <h1>Hello, <?= $name ?>!</h1>
 ```
 
-File: config/route.php
+File: config/routes/web.php
 ```php
 Alight\Route::get('/', [ctr\Pages::class, 'index']);
 ```
@@ -589,7 +624,13 @@ Hello, Ben!
 ```
 
 ### Others
-See [functions.php](./src/functions.php) for more others help.
+There are also some useful helpers placed in different namespaces. Please click the file for details:
+
+| Namespace | File    |
+| --- | --- |
+| Alight\helper()  | [functions.php](./src/functions.php) |
+| Alight\Request::helper()  | [Request.php](./src/Request.php) |
+| Alight\Response::helper()  | [Response.php](./src/Response.php) |
 
 ## Credits
 * Composer requires

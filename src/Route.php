@@ -200,7 +200,7 @@ class Route
      */
     public static function any(string $pattern, callable $handler): RouteUtility
     {
-        return self::addRoute(self::$anyMethods ?: Router::HTTP_METHODS, $pattern, $handler);
+        return self::addRoute(self::$anyMethods ?: Request::HTTP_METHODS, $pattern, $handler);
     }
 
     /**

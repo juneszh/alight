@@ -34,12 +34,12 @@ class ErrorHandler
         } else {
             $whoops = new Run;
 
-            if ($_SERVER['REQUEST_METHOD'] ?? '') {
-                $isAjax = isAjaxRequest();
+            if (Request::method()) {
+                $isAjax = Request::isAjax();
                 if (Config::get('app', 'debug')) {
                     if ($isAjax) {
                         $whoops->pushHandler(function ($exception, $inspector, $run) {
-                            apiResponse(500, Formatter::formatExceptionAsDataArray($inspector, false));
+                            Response::api(500, Formatter::formatExceptionAsDataArray($inspector, false));
                             return Handler::QUIT;
                         });
                     } else {
@@ -48,7 +48,7 @@ class ErrorHandler
                 } else {
                     if ($isAjax) {
                         $whoops->pushHandler(function ($exception, $inspector, $run) {
-                            apiResponse(500);
+                            Response::api(500);
                             return Handler::QUIT;
                         });
                     } else {
