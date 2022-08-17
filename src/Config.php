@@ -15,6 +15,7 @@ namespace Alight;
 
 class Config
 {
+    public static string $configFile = '';
     /**
      * Default configuration
      * 
@@ -95,6 +96,7 @@ class Config
                 $configFile = rootPath($config);
                 if (file_exists($configFile)) {
                     $config = include $configFile;
+                    self::$configFile = $configFile;
                 }
             }
 
