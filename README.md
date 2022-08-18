@@ -61,15 +61,15 @@ Add the following to the end line:
 ```
 
 ## Configuration
-All of the configuration options for the Alight framework are initialized by `Alight\start()`
+All of the configuration options for the Alight framework are initialized by `Alight\App::start()`
 
 ```php
 // Import a configuration file (recommended)
 // You can find this code in the file "config/bootstrap.php"
-Alight\start('config/app.php');
+Alight\App::start('config/app.php');
 
 // It is also possible import the configuration array directly
-Alight\start([
+Alight\App::start([
     'app' => [
         'debug' => true,
         'timezone' => 'Europe/Kiev'
@@ -466,7 +466,7 @@ class Cache
 See [Symfony Cache Component](https://symfony.com/doc/current/components/cache.html) for more information.
 
 ## Error Handling
-Alight catches all errors via `Alight\start()` and saves to log file by default. When you turn on 'debug' in the app configuration, errors will be automatically output in pretty html (by **filp/whoops**) or JSON.
+Alight catches all errors via `Alight\App::start()` and saves to log file by default. When you turn on 'debug' in the app configuration, errors will be automatically output in pretty html (by **filp/whoops**) or JSON.
 
 File: config/app.php
 ```php
@@ -524,7 +524,7 @@ Alight\App::root('/var/data/config/web.php');
 
 The file paths in the configuration are all based on the `Alight\App::root()`. For example:
 ```php
-Alight\start([
+Alight\App::start([
     'route' => 'config/routes/web.php',     // /var/www/html/my_project/config/routes/web.php
     'job' => 'config/job.php'          // /var/www/html/my_project/config/job.php
 ]);
