@@ -30,7 +30,7 @@ class Request
         self::$query = $_GET ?: [];
         self::$body = $_POST ?: [];
         if (in_array(self::method(), ['POST', 'PUT', 'DELETE', 'PATCH']) && self::isJson()) {
-            if (isJson(self::body())) {
+            if (Utility::isJson(self::body())) {
                 self::$body = json_decode(self::body(), true);
             }
         }

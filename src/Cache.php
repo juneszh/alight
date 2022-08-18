@@ -104,7 +104,7 @@ class Cache
             $config = self::getConfig($key);
             switch ($config['type']) {
                 case 'file':
-                    $directory = rootPath(Config::get('app', 'storagePath') ?: 'storage') . '/cache';
+                    $directory = App::rootPath(Config::get('app', 'storagePath') ?: 'storage') . '/cache';
                     $psr6Cache = new FilesystemAdapter($config['namespace'], $config['defaultLifetime'], $directory);
                     break;
                 case 'memcached':

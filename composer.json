@@ -25,12 +25,8 @@
     "autoload": {
         "psr-4": {
             "Alight\\": "src/"
-        },
-        "files": [
-            "src/functions.php"
-        ]
+        }
     },
-    "minimum-stability": "stable",
     "require": {
         "php": ">=7.4",
         "nikic/fast-route": "^1.3",

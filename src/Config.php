@@ -21,7 +21,7 @@ class Config
      * 
      * @var array
      */
-    private static array $config = [
+    public static array $config = [
         'app' => [
             'debug' => false, //Whether to enable error message output
             'timezone' => null, //Default timezone follows php.ini
@@ -93,9 +93,9 @@ class Config
     {
         if ($config) {
             if (is_string($config)) {
-                $configFile = rootPath($config);
+                $configFile = App::rootPath($config);
                 if (file_exists($configFile)) {
-                    $config = include $configFile;
+                    $config = require $configFile;
                     self::$configFile = $configFile;
                 }
             }

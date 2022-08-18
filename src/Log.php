@@ -48,7 +48,7 @@ class Log
     {
         $logName = trim($logName, '/');
         if (!isset(self::$instance[$logName]) || !(self::$instance[$logName] instanceof Logger)) {
-            $configPath = rootPath(Config::get('app', 'storagePath') ?: 'storage') . '/log';
+            $configPath = App::rootPath(Config::get('app', 'storagePath') ?: 'storage') . '/log';
             if (!is_dir($configPath)) {
                 if (!mkdir($configPath, 0777, true)) {
                     throw new Exception('Failed to create log directory.');
