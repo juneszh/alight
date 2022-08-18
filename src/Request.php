@@ -106,6 +106,54 @@ class Request
     }
 
     /**
+     * Get the request scheme
+     * 
+     * @return string 
+     */
+    public static function scheme(): string
+    {
+        static $scheme = null;
+        if ($scheme === null) {
+            if (
+                (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) === 'on')
+                ||
+                (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+                ||
+                (isset($_SERVER['HTTP_FRONT_END_HTTPS']) && $_SERVER['HTTP_FRONT_END_HTTPS'] === 'on')
+                ||
+                (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] === 'https')
+            ) {
+                $scheme = 'https';
+            } else {
+                $scheme = 'http';
+            }
+        }
+
+        return $scheme;
+    }
+
+    /**
+     * Get the request host
+     * 
+     * @return string 
+     */
+    public static function host(): string
+    {
+        static $host = null;
+        if ($host === null) {
+            if (isset($_SERVER['HTTP_HOST'])) {
+                $host = $_SERVER['HTTP_HOST'];
+            } elseif (isset($_SERVER['SERVER_NAME'])) {
+                $host = $_SERVER['SERVER_NAME'];
+            } else {
+                $host = '';
+            }
+        }
+
+        return $host;
+    }
+
+    /**
      * Get the request subdomain
      * 
      * @return string 
@@ -115,7 +163,7 @@ class Request
         static $subdomain = null;
         if ($subdomain === null) {
             $configDomainLevel = (int) Config::get('app', 'domainLevel');
-            $subdomain = join('.', array_slice(explode('.', $_SERVER['HTTP_HOST'] ?? ''), 0, -$configDomainLevel));
+            $subdomain = join('.', array_slice(explode('.', self::host()), 0, -$configDomainLevel));
         }
 
         return $subdomain;
