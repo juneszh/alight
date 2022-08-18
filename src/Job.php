@@ -68,7 +68,7 @@ class Job
         }
 
         if ($jobs) {
-            $lockPath = App::rootPath(Config::get('app', 'storagePath') ?: 'storage') . '/job';
+            $lockPath = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/job';
             if (!is_dir($lockPath)) {
                 if (!mkdir($lockPath, 0777, true)) {
                     throw new Exception('Failed to create job lock directory.');
@@ -159,7 +159,7 @@ class Job
 
         if ($configjob) {
             foreach ($configjob as $_file) {
-                $_file = App::rootPath($_file);
+                $_file = App::root($_file);
                 if (!is_file($_file)) {
                     throw new Exception('Missing job file: ' . $_file . '.');
                 }

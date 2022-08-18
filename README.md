@@ -512,17 +512,17 @@ class Error
 ## Helpers
 
 ### Project root path
-Alight provides `Alight\rootPath()` to standardize the format of file paths in project. 
+Alight provides `Alight\App::root()` to standardize the format of file paths in project. 
 
 ```php
 // Suppose the absolute path of the project is /var/www/html/my_project/
-Alight\rootPath('public/favicon.ico'); // /var/www/html/my_project/public/favicon.ico
+Alight\App::root('public/favicon.ico'); // /var/www/html/my_project/public/favicon.ico
 
 // Of course, you can also use absolute path files with the first character  '/'
-Alight\rootPath('/var/data/config/web.php');
+Alight\App::root('/var/data/config/web.php');
 ```
 
-The file paths in the configuration are all based on the `Alight\rootPath()`. For example:
+The file paths in the configuration are all based on the `Alight\App::root()`. For example:
 ```php
 Alight\start([
     'route' => 'config/routes/web.php',     // /var/www/html/my_project/config/routes/web.php
@@ -628,9 +628,9 @@ There are also some useful helpers placed in different namespaces. Please click 
 
 | Namespace | File    |
 | --- | --- |
-| Alight\helper()  | [functions.php](./src/functions.php) |
 | Alight\Request::helper()  | [Request.php](./src/Request.php) |
 | Alight\Response::helper()  | [Response.php](./src/Response.php) |
+| Alight\Utility::helper()  | [Utility.php](./src/Utility.php) |
 
 ## Credits
 * Composer requires

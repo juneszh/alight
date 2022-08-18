@@ -93,7 +93,7 @@ class Config
     {
         if ($config) {
             if (is_string($config)) {
-                $configFile = App::rootPath($config);
+                $configFile = App::root($config);
                 if (file_exists($configFile)) {
                     $config = require $configFile;
                     self::$configFile = $configFile;

@@ -147,7 +147,7 @@ class Response
     public static function render(string $file, array $data = [])
     {
         $viewPath = Config::get('app', 'viewPath') ?: '';
-        $template = App::rootPath(($viewPath && $file[0] !== '/') ? trim($viewPath, '/') . '/' . $file : $file);
+        $template = App::root(($viewPath && $file[0] !== '/') ? trim($viewPath, '/') . '/' . $file : $file);
         if (!file_exists($template)) {
             throw new Exception("Template file not found: {$template}.");
         }

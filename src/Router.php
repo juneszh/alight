@@ -133,7 +133,7 @@ class Router
                 }
 
                 foreach ($_files as $_file) {
-                    $_file = App::rootPath($_file);
+                    $_file = App::root($_file);
                     if (!is_file($_file)) {
                         throw new Exception('Missing route file: ' . $_file . '.');
                     }
@@ -167,7 +167,7 @@ class Router
             $requestPath = rtrim(Request::path(), '/');
 
             foreach ($routeFiles as $_routeFile) {
-                $configStorage = App::rootPath(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_routeFile, '.php') . '/' . filemtime($_routeFile);
+                $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_routeFile, '.php') . '/' . filemtime($_routeFile);
                 if (!is_dir($configStorage)) {
                     if (!mkdir($configStorage, 0777, true)) {
                         throw new Exception('Failed to create route directory.');
