@@ -479,7 +479,7 @@ return [
 ```
 
 ### Custom handler
-When turn off 'debug' in production environment, Alight just logs errors to file and outputs empty content. 
+When turn off 'debug' in production environment, Alight just logs errors to file and outputs HTTP status. 
 You can override these default behaviors by app configuration. For example:
 
 File: config/app.php
@@ -507,9 +507,6 @@ class Error
     public static function page(int $status)
     {
         switch ($status) {
-            case 400:
-                // Page code...
-                break;
             case 401:
                 // Page code...
                 break;
@@ -562,7 +559,7 @@ HTTP 200 OK
 }
 ```
 Status Definition:
-| Http Status | API Error | Description    |
+| HTTP Status | API Error | Description    |
 | ---: | ----: | ------ |
 | 200  | 0     | OK |
 | 200  | 1xxx  | General business errors, only display message to user |

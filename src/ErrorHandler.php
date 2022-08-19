@@ -73,6 +73,7 @@ class ErrorHandler
             call_user_func_array($errorPageHandler, [$status]);
         } else {
             http_response_code($status);
+            echo '<h1>', $status, ' ', Response::HTTP_STATUS[$status] ?? '', '</h1>';
         }
     }
 }
