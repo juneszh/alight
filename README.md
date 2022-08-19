@@ -421,7 +421,7 @@ File: config/app.php
 ```php
 return [
     'app' => [
-        'cacheAdapter' => [\svc\Cache::class, 'adapter'],
+        'cacheAdapter' => [svc\Cache::class, 'adapter'],
     ],
     'cache' => [
         // ...
@@ -466,7 +466,7 @@ class Cache
 See [Symfony Cache Component](https://symfony.com/doc/current/components/cache.html) for more information.
 
 ## Error Handling
-Alight catches all errors via `Alight\App::start()` and saves to log file by default. When you turn on 'debug' in the app configuration, errors will be automatically output in pretty html (by **filp/whoops**) or JSON.
+Alight catches all errors via `Alight\App::start()`. When turn on 'debug' in the app configuration, errors will be output in pretty html (by **filp/whoops**) or JSON.
 
 File: config/app.php
 ```php
@@ -479,13 +479,15 @@ return [
 ```
 
 ### Custom handler
-Also supports custom error handler to override built-in one. For example:
+When turn off 'debug' in production environment, Alight just logs errors to file and outputs empty content. 
+You can override these default behaviors by app configuration. For example:
 
 File: config/app.php
 ```php
 return [
     'app' => [
-        'errorHandler' => [\svc\Error::class, 'catch'],
+        'errorHandler' => [svc\Error::class, 'catch'],
+        'errorPageHandler' => [svc\Error::class, 'page'],
     ]
 ];
 
@@ -497,14 +499,33 @@ namespace svc;
 
 class Error
 {
-    public static function catch()
+    public static function catch(Throwable $exception)
     {
-        set_exception_handler([self::class, 'handler']);
+        // Some code like sending an email or using Sentry or something
     }
 
-    public static function handler(Throwable $exception)
+    public static function page(int $status)
     {
-        // Some codes ...
+        switch ($status) {
+            case 400:
+                // Page code...
+                break;
+            case 401:
+                // Page code...
+                break;
+            case 403:
+                // Page code...
+                break;
+            case 404:
+                // Page code...
+                break;
+            case 500:
+                // Page code...
+                break;
+            default:
+                // Page code...
+                break;
+        }
     }
 }
 ```

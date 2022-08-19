@@ -28,44 +28,51 @@ class ErrorHandler
      */
     public static function init()
     {
-        $customErrorHandler = Config::get('app', 'errorHandler');
-        if (is_callable($customErrorHandler)) {
-            call_user_func($customErrorHandler);
-        } else {
-            $whoops = new Run;
 
-            if (Request::method()) {
-                $isAjax = Request::isAjax();
-                if (Config::get('app', 'debug')) {
-                    if ($isAjax) {
-                        $whoops->pushHandler(function ($exception, $inspector, $run) {
-                            Response::api(500, Formatter::formatExceptionAsDataArray($inspector, false));
-                            return Handler::QUIT;
-                        });
-                    } else {
-                        $whoops->pushHandler(new PrettyPageHandler);
-                    }
+        $whoops = new Run;
+
+        if (Request::method()) {
+            if (Config::get('app', 'debug')) {
+                if (Request::isAjax()) {
+                    $whoops->pushHandler(function ($exception, $inspector, $run) {
+                        Response::api(500, Formatter::formatExceptionAsDataArray($inspector, false));
+                        return Handler::QUIT;
+                    });
                 } else {
-                    if ($isAjax) {
-                        $whoops->pushHandler(function ($exception, $inspector, $run) {
-                            Response::api(500);
-                            return Handler::QUIT;
-                        });
-                    } else {
-                        $whoops->pushHandler(function ($exception, $inspector, $run) {
-                            http_response_code(500);
-                            return Handler::QUIT;
-                        });
-                    }
+                    $whoops->pushHandler(new PrettyPageHandler);
                 }
+            } else {
+                $whoops->pushHandler(function ($exception, $inspector, $run) {
+                    if (Request::isAjax()) {
+                        Response::api(500);
+                    } else {
+                        self::page(500);
+                    }
+                    return Handler::QUIT;
+                });
             }
+        }
 
-            $whoops->pushHandler(function ($exception, $inspector, $run) {
+        $whoops->pushHandler(function ($exception, $inspector, $run) {
+            $errorHandler = Config::get('app', 'errorHandler');
+            if (is_callable($errorHandler)) {
+                call_user_func_array($errorHandler, [$exception]);
+            } else {
                 Log::error($exception);
-                return Handler::DONE;
-            });
+            }
+            return Handler::DONE;
+        });
 
-            $whoops->register();
+        $whoops->register();
+    }
+
+    public static function page(int $status)
+    {
+        $errorPageHandler = Config::get('app', 'errorPageHandler');
+        if (is_callable($errorPageHandler)) {
+            call_user_func_array($errorPageHandler, [$status]);
+        } else {
+            http_response_code($status);
         }
     }
 }

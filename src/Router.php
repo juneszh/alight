@@ -50,14 +50,22 @@ class Router
     public static function start()
     {
         if (!in_array(Request::method(), Request::HTTP_METHODS)) {
-            http_response_code(404);
+            if (Request::isAjax()) {
+                Response::api(404);
+            } else {
+                ErrorHandler::page(404);
+            }
             exit;
         }
 
-        $routeResult = self::getResult();
+        $routeResult = self::dispatch(self::configFiles(), Request::method(), rtrim(Request::path(), '/'));
         if (!$routeResult || $routeResult[0] !== Dispatcher::FOUND) {
             if (Request::method() !== 'OPTIONS') {
-                http_response_code(404);
+                if (Request::isAjax()) {
+                    Response::api(404);
+                } else {
+                    ErrorHandler::page(404);
+                }
             }
             exit;
         }
@@ -111,7 +119,7 @@ class Router
      * @return array 
      * @throws Exception 
      */
-    private static function getFiles(): array
+    private static function configFiles(): array
     {
         $routeFiles = [];
 
@@ -149,44 +157,43 @@ class Router
     /**
      * Get the results from FastRoute dispatcher 
      * 
+     * @param array $configFiles 
+     * @param string $method 
+     * @param string $path 
      * @return array 
      * @throws Exception 
      * @throws LogicException 
      * @throws RuntimeException 
      */
-    private static function getResult(): array
+    public static function dispatch(array $configFiles, string $method, string $path = ''): array
     {
         $result = [];
-
-        $routeFiles = self::getFiles();
-        if ($routeFiles) {
-            if (Request::method() === 'OPTIONS') {
+        if ($configFiles) {
+            if ($method === 'OPTIONS') {
                 header('Allow: ' . join(', ', Request::HTTP_METHODS));
             }
 
-            $requestPath = rtrim(Request::path(), '/');
-
-            foreach ($routeFiles as $_routeFile) {
-                $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_routeFile, '.php') . '/' . filemtime($_routeFile);
+            foreach ($configFiles as $_configFile) {
+                $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_configFile, '.php') . '/' . filemtime($_configFile);
                 if (!is_dir($configStorage)) {
                     if (!mkdir($configStorage, 0777, true)) {
                         throw new Exception('Failed to create route directory.');
                     }
                 }
 
-                $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) use ($_routeFile, $configStorage) {
+                $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) use ($method, $_configFile, $configStorage) {
                     Route::init();
-                    require $_routeFile;
+                    require $_configFile;
                     foreach (Route::$config as $_route) {
                         if (!isset($_route['method'])) {
                             continue;
                         }
 
-                        if (!in_array(Request::method(), $_route['method'])) {
+                        if (!in_array($method, $_route['method'])) {
                             continue;
                         }
 
-                        $r->addRoute(Request::method(), $_route['pattern'], $_route);
+                        $r->addRoute($method, $_route['pattern'], $_route);
                     }
 
                     $oldCacheDirs = glob(dirname($configStorage) . '/*');
@@ -204,11 +211,11 @@ class Router
                         }
                     }
                 }, [
-                    'cacheFile' => $configStorage . '/' . Request::method() . '.php',
+                    'cacheFile' => $configStorage . '/' . $method . '.php',
                     'cacheDisabled' => Route::$disableCache,
                 ]);
 
-                $result = $dispatcher->dispatch(Request::method(), $requestPath);
+                $result = $dispatcher->dispatch($method, $path);
                 if ($result[0] === Dispatcher::FOUND) {
                     break;
                 }

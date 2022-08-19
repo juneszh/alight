@@ -18,9 +18,9 @@ class Route
     public static array $config = [];
     private static int $index = 0;
     private static string $group = '';
+    private static array $anyMethods = [];
     private static $authHandler;
     private static $beforeHandler;
-    private static array $anyMethods = [];
     public static bool $disableCache = false;
 
     private function __construct()
@@ -44,14 +44,14 @@ class Route
         self::$config = [];
         self::$index = 0;
         self::$group = '';
+        self::$anyMethods = [];
         self::$authHandler = null;
         self::$beforeHandler = null;
-        self::$anyMethods = [];
         self::$disableCache = false;
     }
 
     /**
-     * Add route rule
+     * Add route
      * 
      * @param array $method 
      * @param string $pattern 
@@ -83,7 +83,7 @@ class Route
     }
 
     /**
-     * Add 'GET' method rule
+     * Add 'GET' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -95,7 +95,7 @@ class Route
     }
 
     /**
-     * Add 'HEAD' method rule
+     * Add 'HEAD' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -107,7 +107,7 @@ class Route
     }
 
     /**
-     * Add 'POST' method rule
+     * Add 'POST' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -119,7 +119,7 @@ class Route
     }
 
     /**
-     * Add 'DELETE' method rule
+     * Add 'DELETE' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -131,7 +131,7 @@ class Route
     }
 
     /**
-     * Add 'PUT' method rule
+     * Add 'PUT' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -143,7 +143,7 @@ class Route
     }
 
     /**
-     * Add 'OPTIONS' method rule
+     * Add 'OPTIONS' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -155,7 +155,7 @@ class Route
     }
 
     /**
-     * Add 'TRACE' method rule
+     * Add 'TRACE' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -167,7 +167,7 @@ class Route
     }
 
     /**
-     * Add 'PATCH' method rule
+     * Add 'PATCH' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
@@ -179,7 +179,7 @@ class Route
     }
 
     /**
-     * Map some methods rule
+     * Map some methods route
      * 
      * @param array $method 
      * @param string $pattern 
@@ -192,7 +192,7 @@ class Route
     }
 
     /**
-     * Add all methods rule
+     * Add all methods route
      * 
      * @param string $pattern 
      * @param callable $handler 

@@ -99,15 +99,15 @@ class Response
      */
     public static function api(int $error = 0, $content = null, string $charset = 'utf-8')
     {
-        $code = 200;
+        $status = 200;
         $json = [
             'error' => (int)$error,
-            'message' => self::HTTP_STATUS[$code],
+            'message' => self::HTTP_STATUS[$status],
             'data' => new ArrayObject()
         ];
 
         if ($error && isset(self::HTTP_STATUS[$error])) {
-            $code = $error;
+            $status = $error;
             $json['message'] = self::HTTP_STATUS[$error];
         }
 
@@ -129,10 +129,10 @@ class Response
 
         $jsonEncode = json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if (isset(Request::$query['jsonp'])) {
-            header('Content-Type: application/javascript; charset=' . $charset, true, $code);
+            header('Content-Type: application/javascript; charset=' . $charset, true, $status);
             echo Request::$query['jsonp'] . '(' . $jsonEncode . ')';
         } else {
-            header('Content-Type: application/json; charset=' . $charset, true, $code);
+            header('Content-Type: application/json; charset=' . $charset, true, $status);
             echo $jsonEncode;
         }
     }

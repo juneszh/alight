@@ -29,8 +29,9 @@ class Config
             'viewPath' => '', //The 'view' files path
             'domainLevel' => 2, //Get subdomains for route. For example, set 3 to match 'a' when the domain is like 'a.b.co.jp'
             'corsDomain' => [], //Which domains need to send cors headers
-            'errorHandler' => null, //Override error handler
             'cacheAdapter' => null, //Extended cache adapter based on symfony/cache
+            'errorHandler' => null, //Override error handler
+            'errorPageHandler' => null, //Override error page handler
         ],
         'route' => null,
         // 'route' => 'config/route.php',
