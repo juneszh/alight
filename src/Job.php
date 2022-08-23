@@ -88,10 +88,10 @@ class Job
                 if ($childPid === -1) {
                     $logger->critical('', ['Unable fork', $logData]);
                 } else if ($childPid) {
-                    //main process
+                    // main process
                     ++$childCount;
                 } else {
-                    //child process
+                    // child process
                     $pid = posix_getpid();
                     $lockFile = $lockPath . '/' . str_replace('\\', '.', $_handler) . '.lock';
                     if (file_exists($lockFile)) {
@@ -125,13 +125,13 @@ class Job
                     } else {
                         $logger->error($_handler, ['Missing handler', $logData]);
                     }
-                    //must break foreach in child process
+                    // must break foreach in child process
                     break;
                 }
             }
 
             if ($childPid) {
-                //main process
+                // main process
                 $status = null;
                 for ($i = 0; $i < $childCount; ++$i) {
                     pcntl_wait($status, 0);

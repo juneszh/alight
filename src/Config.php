@@ -18,15 +18,15 @@ class Config
     public static string $configFile = '';
     public static array $config = [
         'app' => [
-            'debug' => false, //Whether to enable error message output
-            'timezone' => null, //Default timezone follows php.ini
-            'storagePath' => 'storage', //The storage path of the files generated at runtime by framework
-            'viewPath' => '', //The 'view' files path
-            'domainLevel' => 2, //Get subdomains for route. For example, set 3 to match 'a' when the domain is like 'a.b.co.jp'
-            'corsDomain' => [], //Which domains need to send cors headers
-            'cacheAdapter' => null, //Extended cache adapter based on symfony/cache
-            'errorHandler' => null, //Override error handler
-            'errorPageHandler' => null, //Override error page handler
+            'debug' => false, // Whether to enable error message output
+            'timezone' => null, // Default timezone follows php.ini
+            'storagePath' => 'storage', // The storage path of the files generated at runtime by framework
+            'viewPath' => '', // The 'view' files path
+            'domainLevel' => 2, // Get subdomains for route. For example, set 3 to match 'a' when the domain is like 'a.b.co.jp'
+            'corsDomain' => [], // Which domains need to send cors headers
+            'cacheAdapter' => null, // Extended cache adapter based on symfony/cache
+            'errorHandler' => null, // Override error handler
+            'errorPageHandler' => null, // Override error page handler
         ],
         'route' => null,
         // 'route' => 'config/route.php',
