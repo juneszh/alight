@@ -16,11 +16,6 @@ namespace Alight;
 class Config
 {
     public static string $configFile = '';
-    /**
-     * Default configuration
-     * 
-     * @var array
-     */
     public static array $config = [
         'app' => [
             'debug' => false, //Whether to enable error message output
