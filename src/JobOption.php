@@ -46,7 +46,7 @@ class JobOption
      */
     public function hourly(int $minute = 0): JobOption
     {
-        return $this->setRule(self::numberPad($minute));
+        return $this->setRule(Utility::numberPad($minute));
     }
 
     /**
@@ -58,7 +58,7 @@ class JobOption
      */
     public function daily(int $hour = 0, int $minute = 0): JobOption
     {
-        return $this->setRule(self::numberPad($hour) . ':' . self::numberPad($minute));
+        return $this->setRule(Utility::numberPad($hour) . ':' . Utility::numberPad($minute));
     }
 
     /**
@@ -71,7 +71,7 @@ class JobOption
      */
     public function weekly(int $dayOfWeek, int $hour = 0, int $minute = 0): JobOption
     {
-        return $this->setRule($dayOfWeek . ' ' . self::numberPad($hour) . ':' . self::numberPad($minute));
+        return $this->setRule($dayOfWeek . ' ' . Utility::numberPad($hour) . ':' . Utility::numberPad($minute));
     }
 
     /**
@@ -84,7 +84,7 @@ class JobOption
      */
     public function monthly(int $dayOfMonth, int $hour = 0, int $minute = 0): JobOption
     {
-        return $this->setRule(self::numberPad($dayOfMonth) . ' ' . self::numberPad($hour) . ':' . self::numberPad($minute));
+        return $this->setRule(Utility::numberPad($dayOfMonth) . ' ' . Utility::numberPad($hour) . ':' . Utility::numberPad($minute));
     }
 
     /**
@@ -98,7 +98,7 @@ class JobOption
      */
     public function yearly(int $month, int $dayOfMonth, int $hour = 0, int $minute = 0): JobOption
     {
-        return $this->setRule(self::numberPad($month) . '-' . self::numberPad($dayOfMonth) . ' ' . self::numberPad($hour) . ':' . self::numberPad($minute));
+        return $this->setRule(Utility::numberPad($month) . '-' . Utility::numberPad($dayOfMonth) . ' ' . Utility::numberPad($hour) . ':' . Utility::numberPad($minute));
     }
 
     /**
@@ -121,7 +121,7 @@ class JobOption
      */
     public function everyHours(int $hours, int $minute = 0): JobOption
     {
-        return $this->setRule('*/' . self::numberPad($hours) . ':' . self::numberPad($minute));
+        return $this->setRule('*/' . Utility::numberPad($hours) . ':' . Utility::numberPad($minute));
     }
 
     /**
@@ -145,18 +145,6 @@ class JobOption
     {
         Job::$config[$this->index]['rule'] = $rule;
         return $this;
-    }
-
-    /**
-     * Pad a leading zero to the number
-     * 
-     * @param int $number 
-     * @param int $length 
-     * @return string 
-     */
-    private static function numberPad(int $number, int $length = 2): string
-    {
-        return str_pad((string)$number, $length, '0', STR_PAD_LEFT);
     }
 
     /**

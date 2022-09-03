@@ -80,4 +80,16 @@ class Utility
 
         return $array;
     }
+
+    /**
+     * Pad a leading zero to the number
+     * 
+     * @param int $number 
+     * @param int $length 
+     * @return string 
+     */
+    public static function numberPad(int $number, int $length = 2): string
+    {
+        return str_pad((string)$number, $length, '0', STR_PAD_LEFT);
+    }
 }

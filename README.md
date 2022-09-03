@@ -1,5 +1,5 @@
 # Alight
-Alight is a light-weight framework for php. Easily and quickly build high performance RESTful web applications. Out-of-the-box built-in routing, database, caching, error handling, logging and job scheduling libraries. Focus on creating solutions for the core process of web applications. Keep simple and extensible.
+Alight is a light-weight framework for PHP. Easily and quickly build high performance RESTful web applications. Out-of-the-box built-in routing, database, caching, error handling, logging and job scheduling libraries. Focus on creating solutions for the core process of web applications. Keep simple and extensible.
 
 ## Requirements
 PHP 7.4+

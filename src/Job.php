@@ -62,7 +62,7 @@ class Job
         }
 
         if ($execJob) {
-            $jobs = [$execJob];
+            $jobs = [$execJob => self::TIME_LIMIT];
         } else {
             $jobs = self::getJobs();
         }
