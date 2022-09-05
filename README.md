@@ -1,5 +1,13 @@
 # Alight
-Alight is a light-weight framework for PHP. Easily and quickly build high performance RESTful web applications. Out-of-the-box built-in routing, database, caching, error handling, logging and job scheduling libraries. Focus on creating solutions for the core process of web applications. Keep simple and extensible.
+Alight is a light-weight PHP framework. Easily and quickly build high performance RESTful web applications. Out-of-the-box built-in routing, database, caching, error handling, logging and job scheduling libraries. Focus on creating solutions for the core process of web applications. Keep simple and extensible.
+
+## Alight Family
+
+| Project     | Description     |
+| --- | --- |
+| [Alight](https://github.com/juneszh/alight)  | Basic framework built-in routing, database, caching, etc. |
+| [Alight-Admin](https://github.com/juneszh/alight-admin)  | A full admin panel extension based on Alight. No front-end coding required.|
+| [Alight-Project](https://github.com/juneszh/alight-project) | A template for beginner to easily create web applications by Alight/Alight-Admin. |
 
 ## Requirements
 PHP 7.4+
@@ -21,9 +29,9 @@ Don’t have Composer? [Install Composer](https://getcomposer.org/download/) fir
 ### Step 2: Creating Project
 #### Using template with create-project
 ```bash
-$ composer create-project juneszh/alight-project {YOUR_PROJECT}
+$ composer create-project juneszh/alight-project {PROJECT_DIRECTORY}
 ```
-The project template contains common folder structure, suitable for MVC pattern, please refer to: [Alight Project](https://github.com/juneszh/alight-project).
+The project template contains common folder structure, suitable for MVC pattern, please refer to: [Alight-Project](https://github.com/juneszh/alight-project).
 
 *It is easy to customize folders by modifying the configuration. But the following tutorials are based on the template configuration.*
 
@@ -34,7 +42,7 @@ server {
     listen 80;
     listen [::]:80;
 
-    root /var/www/html/{YOUR_PROJECT}/public;
+    root /var/www/html/{PROJECT_DIRECTORY}/public;
 
     index index.php;
 
@@ -76,7 +84,7 @@ Alight\App::start([
 ]);
 ```
 
-### Available configuration
+### Available Configuration
 See [Config.php](./src/Config.php) for details.
 
 ## Routing
@@ -110,7 +118,7 @@ return [
 ];
 ```
 
-### Basic usage
+### Basic Usage
 ```php
 Alight\Route::get($pattern, $handler);
 // Example
@@ -310,7 +318,7 @@ return [
 ];
 ```
 
-### Basic usage
+### Basic Usage
 `Alight\Database::init()` is a static and single instance implementation of `new Medoo\Medoo()`, so it inherits all functions of `Medoo()`. Single instance makes each request connect to the database only once and reuse it, effectively reducing the number of database connections.
 ```php
 // Initializes the default database
@@ -359,7 +367,7 @@ return [
 ];
 ```
 
-### Basic usage (PSR-16)
+### Basic Usage (PSR-16)
 Like database, `Alight\Cache::init()` is a static and single instance implementation of the cache client to improve concurrent request performance.
 
 ```php
@@ -376,7 +384,7 @@ $cacheData = $cache->get('test');
 $cache->delete('test');
 ```
 
-### PSR-6 interface
+### PSR-6 Interface
 ```php
 $cache = \Alight\Cache::psr6('memcached');
 $cacheItem = $cache->getItem('test');
@@ -395,7 +403,7 @@ $cacheData = $cache->get('test', function ($item){
 $cache->delete('test');
 ```
 
-### Native interface
+### Native Interface
 Also supports memcached or redis native interfaces for using advanced caching:
 ```php
 $memcached = \Alight\Cache::memcached('memcached');
@@ -405,7 +413,7 @@ $redis = \Alight\Cache::redis('redis');
 $redis->lPush('list', 'first');
 ```
 
-### More adapter
+### More Adapter
 **symfony/cache** supports more than 10 adapters, but we only have built-in 3 commonly used, such as filesystem, memcached, redis. If you need more adapters, you can expand it. For example:
 
 File: config/app.php
@@ -469,7 +477,7 @@ return [
 
 ```
 
-### Custom handler
+### Custom Handler
 When turn off 'debug' in production environment, Alight just logs errors to file and outputs HTTP status. 
 You can override these default behaviors by app configuration. For example:
 
@@ -524,16 +532,16 @@ class Error
 ## Job Scheduling
 
 If you need to run php scripts in the background periodically.
-### Step 1: Setting up CRON
+### Step 1: Setting Up CRON
 ```bash
 $ contab -e
 ```
 Add the following to the end line:
 ```bash
-* * * * * sudo -u www-data /usr/bin/php /var/www/html/{YOUR_PROJECT}/app/scheduler.php >> /dev/null 2>&1
+* * * * * sudo -u www-data /usr/bin/php /var/www/html/{PROJECT_DIRECTORY}/app/scheduler.php >> /dev/null 2>&1
 ```
 
-### Step 2: Create jobs
+### Step 2: Create Jobs
 File: config/job.php
 ```php
 Alight\Job::call('handler')->minutely();
@@ -555,7 +563,7 @@ Alight\Job::call('handler')->hourly()->timeLimit(7200);// 7200 seconds
 
 ## Helpers
 
-### Project root path
+### Project Root Path
 Alight provides `Alight\App::root()` to standardize the format of file paths in project. 
 
 ```php
@@ -672,9 +680,9 @@ There are also some useful helpers placed in different namespaces. Please click 
 
 | Namespace | File    |
 | --- | --- |
-| Alight\Request::helper()  | [Request.php](./src/Request.php) |
-| Alight\Response::helper()  | [Response.php](./src/Response.php) |
-| Alight\Utility::helper()  | [Utility.php](./src/Utility.php) |
+| Alight\Request  | [Request.php](./src/Request.php) |
+| Alight\Response  | [Response.php](./src/Response.php) |
+| Alight\Utility  | [Utility.php](./src/Utility.php) |
 
 ## Credits
 * Composer requires

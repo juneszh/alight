@@ -13,12 +13,10 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Composer\Autoload\ClassLoader;
 use ErrorException;
 use Exception;
 use InvalidArgumentException;
 use LogicException;
-use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\Cache\Exception\InvalidArgumentException as ExceptionInvalidArgumentException;
 
@@ -69,7 +67,7 @@ class App
         } else {
             static $rootPath = null;
             if ($rootPath === null) {
-                $rootPath = dirname((new ReflectionClass(ClassLoader::class))->getFileName(), 3);
+                $rootPath = dirname(__DIR__, 4);
             }
             return $rootPath . '/' . rtrim($path, '/');
         }
