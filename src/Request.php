@@ -85,6 +85,26 @@ class Request
     }
 
     /**
+     * Get the User-Agent
+     * 
+     * @return string 
+     */
+    public static function userAgent(): string
+    {
+        return $_SERVER['HTTP_USER_AGENT'] ?? '';
+    }
+
+    /**
+     * Get the Referrer
+     * 
+     * @return string 
+     */
+    public static function referrer(): string
+    {
+        return $_SERVER['HTTP_REFERER'] ?? '';
+    }
+
+    /**
      * Get the request method
      * 
      * @return string 
@@ -151,6 +171,16 @@ class Request
         }
 
         return $host;
+    }
+
+    /**
+     * Get the base url
+     * 
+     * @return string 
+     */
+    public static function baseUrl(): string
+    {
+        return self::scheme() . '://' . self::host();
     }
 
     /**
