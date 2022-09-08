@@ -51,31 +51,39 @@ class Utility
     }
 
     /**
-     * Two-dimensional array filter
+     * Two-dimensional array filter and enum maker
      * 
      * @param array $array 
-     * @param array $filter 
+     * @param null|array $filter 
+     * @param null|string $enumKey
+     * @param null|string $enumValue
      * @return array 
      */
-    public static function arrayFilter(array $array, array $filter): array
+    public static function arrayFilter(array $array, ?array $filter, ?string $enumKey = null, ?string $enumValue = null): array
     {
-        if ($filter) {
-            $array = array_filter($array, function ($value) use ($filter) {
-                foreach ($filter as $k => $v) {
-                    if (!isset($value[$k])) {
-                        return false;
-                    } elseif (is_array($v)) {
-                        if (!in_array($value[$k], $v)) {
+        if ($array) {
+            if ($filter) {
+                $array = array_values(array_filter($array, function ($value) use ($filter) {
+                    foreach ($filter as $k => $v) {
+                        if (!isset($value[$k])) {
                             return false;
-                        }
-                    } else {
-                        if ($value[$k] != $v) {
-                            return false;
+                        } elseif (is_array($v)) {
+                            if (!in_array($value[$k], $v)) {
+                                return false;
+                            }
+                        } else {
+                            if ($value[$k] != $v) {
+                                return false;
+                            }
                         }
                     }
-                }
-                return true;
-            });
+                    return true;
+                }));
+            }
+
+            if ($enumKey || $enumValue) {
+                $array = array_column($array, $enumValue, $enumKey);
+            }
         }
 
         return $array;
