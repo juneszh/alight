@@ -73,7 +73,7 @@ Alight\App::start([
         'debug' => true,
         'timezone' => 'Europe/Kiev'
     ],
-    'route' => 'config/routes/web.php',
+    'route' => 'config/route/web.php',
     'database' => [
         'type' => 'mysql',
         'host' => '127.0.0.1',
@@ -90,7 +90,7 @@ See [Config.php](./src/Config.php) for details.
 ## Routing
 Before learning routing rules, you need to create a php file first that stores routing rules. Because the routing cache is updated or not, it is based on the modification time of the routing file. For example:
 
-File: config/routes/web.php
+File: config/route/web.php
 ```php
 Alight\Route::get('/', 'Controller::index');
 ```
@@ -98,9 +98,9 @@ Alight\Route::get('/', 'Controller::index');
 File: config/app.php
 ```php
 return [
-    'route' => 'config/routes/web.php'
+    'route' => 'config/route/web.php'
     // Also supports multiple files
-    // 'route' => ['config/routes/web.php', config/routes/api.php'] 
+    // 'route' => ['config/route/web.php', config/route/api.php'] 
 ];
 ```
 
@@ -109,11 +109,11 @@ By the way, the route configuration supports importing specified files for **sub
 return [
     'route' => [
         //Import on any request
-        '*' => 'config/routes/web.php', 
+        '*' => 'config/route/web.php', 
         //Import when requesting admin.yourdomain.com
-        'admin' => 'config/routes/admin.php', 
+        'admin' => 'config/route/admin.php', 
         //Import multiple files when requesting api.yourdomain.com
-        'api' => ['config/routes/api.php', 'config/routes/api_mobile.php'], 
+        'api' => ['config/route/api.php', 'config/route/api_mobile.php'], 
     ]
 ];
 ```
@@ -577,7 +577,7 @@ Alight provides `Alight\App::root()` to standardize the format of file paths in 
 The file paths in the configuration are all based on the `Alight\App::root()`. For example:
 ```php
 Alight\App::start([
-    'route' => 'config/routes/web.php',     // /var/www/html/my_project/config/routes/web.php
+    'route' => 'config/route/web.php',     // /var/www/html/my_project/config/route/web.php
     'job' => 'config/job.php'          // /var/www/html/my_project/config/job.php
 ]);
 ```
@@ -641,13 +641,6 @@ For example:
 ### Views
 Alight provides `Alight\Response::render()` to display a view template call the render method with the path of the template file and optional template data:
 
-File: config/app.php
-```php
-return [
-    'viewPath' => 'app/Views' // Define the default view path
-]);
-```
-
 File: app/Controllers/Pages.php
 ```php
 namespace ctr;
@@ -661,11 +654,11 @@ class Pages
 ```
 
 File: app/Views/hello.php
-```html
+```php
 <h1>Hello, <?= $name ?>!</h1>
 ```
 
-File: config/routes/web.php
+File: config/route/web.php
 ```php
 Alight\Route::get('/', [ctr\Pages::class, 'index']);
 ```
