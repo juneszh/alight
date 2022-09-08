@@ -138,6 +138,22 @@ class Response
     }
 
     /**
+     * Error page
+     * 
+     * @param int $status 
+     */
+    public static function errorPage(int $status)
+    {
+        $errorPageHandler = Config::get('app', 'errorPageHandler');
+        if (is_callable($errorPageHandler)) {
+            call_user_func_array($errorPageHandler, [$status]);
+        } else {
+            http_response_code($status);
+            echo '<h1>', $status, ' ', self::HTTP_STATUS[$status] ?? '', '</h1>';
+        }
+    }
+
+    /**
      * Simple template render
      * 
      * @param string $file 
@@ -146,8 +162,7 @@ class Response
      */
     public static function render(string $file, array $data = [])
     {
-        $viewPath = Config::get('app', 'viewPath') ?: '';
-        $template = App::root(($viewPath && $file[0] !== '/') ? trim($viewPath, '/') . '/' . $file : $file);
+        $template = App::root($file);
         if (!file_exists($template)) {
             throw new Exception("Template file not found: {$template}.");
         }

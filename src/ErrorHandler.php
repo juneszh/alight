@@ -46,7 +46,7 @@ class ErrorHandler
                     if (Request::isAjax()) {
                         Response::api(500);
                     } else {
-                        self::page(500);
+                        Response::errorPage(500);
                     }
                     return Handler::QUIT;
                 });
@@ -66,14 +66,4 @@ class ErrorHandler
         $whoops->register();
     }
 
-    public static function page(int $status)
-    {
-        $errorPageHandler = Config::get('app', 'errorPageHandler');
-        if (is_callable($errorPageHandler)) {
-            call_user_func_array($errorPageHandler, [$status]);
-        } else {
-            http_response_code($status);
-            echo '<h1>', $status, ' ', Response::HTTP_STATUS[$status] ?? '', '</h1>';
-        }
-    }
 }
