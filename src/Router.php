@@ -53,7 +53,7 @@ class Router
             if (Request::isAjax()) {
                 Response::api(404);
             } else {
-                ErrorHandler::page(404);
+                Response::errorPage(404);
             }
             exit;
         }
@@ -64,7 +64,7 @@ class Router
                 if (Request::isAjax()) {
                     Response::api(404);
                 } else {
-                    ErrorHandler::page(404);
+                    Response::errorPage(404);
                 }
             }
             exit;
