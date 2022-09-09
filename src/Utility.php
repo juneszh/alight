@@ -18,15 +18,37 @@ use Exception;
 class Utility
 {
     /**
-     * Create a Unique ID
+     * Create a random hex string
      * 
      * @param int $length 
      * @return string 
      * @throws Exception 
      */
-    public static function uid(int $length = 32): string
+    public static function randomHex(int $length = 32): string
     {
+        if ($length % 2 !== 0) {
+            throw new Exception('length must be even.');
+        }
         return bin2hex(random_bytes($length / 2));
+    }
+
+    /**
+     * Create a unique number string
+     * 
+     * @param int $length 
+     * @return string 
+     * @throws Exception 
+     */
+    public static function uniqueNumber(int $length = 16): string
+    {
+        if ($length < 16) {
+            throw new Exception('Length must be greater than 15.');
+        }
+        $dateTime = date('ymdHis');
+        $microTime = substr((string) floor(microtime(true) * 1000), -3);
+        $randLength = $length - 15;
+        $randNumber = str_pad((string) random_int(0, pow(10, $randLength) - 1), $randLength, '0', STR_PAD_LEFT);
+        return $dateTime . $microTime . $randNumber;
     }
 
     /**
