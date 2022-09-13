@@ -244,7 +244,7 @@ Alight\Route::get('/about/us', 'handler');
 // Please add cache(n) after auth() to override the configuration if you need
 Alight\Route::get('/user/rank/list', 'handler')->auth()->cache(3600);
 ```
-File: app/Services/Auth.php
+File: app/service/Auth.php
 ```php
 namespace svc;
 
@@ -436,7 +436,7 @@ return [
 
 ```
 
-File: app/Services/Cache.php
+File: app/service/Cache.php
 ```php
 namespace svc;
 
@@ -492,7 +492,7 @@ return [
 
 ```
 
-File: app/Services/Error.php
+File: app/service/Error.php
 ```php
 namespace svc;
 
@@ -641,7 +641,7 @@ For example:
 ### Views
 Alight provides `Alight\Response::render()` to display a view template call the render method with the path of the template file and optional template data:
 
-File: app/Controllers/Pages.php
+File: app/controller/Pages.php
 ```php
 namespace ctr;
 class Pages
@@ -653,7 +653,7 @@ class Pages
 }
 ```
 
-File: app/Views/hello.php
+File: app/view/hello.php
 ```php
 <h1>Hello, <?= $name ?>!</h1>
 ```
