@@ -250,6 +250,19 @@ class Router
     }
 
     /**
+     * Clear route cache
+     * 
+     * @throws Exception 
+     */
+    public static function clearCache()
+    {
+        if (PHP_SAPI !== 'cli') {
+            throw new Exception('PHP-CLI required.');
+        }
+        exec('rm -rf '. App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/');
+    }
+
+    /**
      * Get authorized user id
      * 
      * @return mixed 
