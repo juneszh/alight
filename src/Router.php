@@ -259,6 +259,13 @@ class Router
         if (PHP_SAPI !== 'cli') {
             throw new Exception('PHP-CLI required.');
         }
+        
+        $configFile = realpath('config/app.php');
+        if (!$configFile) {
+            throw new Exception('Missing configuration file: config/app.php');
+        }
+        
+        Config::init($configFile);
         exec('rm -rf '. App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/');
     }
 
