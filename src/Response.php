@@ -221,11 +221,12 @@ class Response
                 $cors = is_bool($force) ? $origin : $force;
             } else {
                 $host = $_SERVER['HTTP_HOST'] ?? '';
-                if (substr($origin, -strlen($host)) !== $host) {
+                $originHost = parse_url($origin)['host'] ?? '';
+                if ($originHost && substr($originHost, -strlen($host)) !== $host) {
                     $configCORS = Config::get('app', 'cors') ?? [];
-                    if ($configCORS && substr($origin, -strlen($host)) !== $host) {
+                    if ($configCORS) {
                         foreach ($configCORS as $domain) {
-                            if ($domain === '*' || substr($origin, -strlen($domain)) === $domain) {
+                            if ($domain === '*' || substr($originHost, -strlen($domain)) === $domain) {
                                 $cors = $origin;
                                 break;
                             }
