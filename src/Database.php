@@ -49,6 +49,11 @@ class Database
                 $config['error'] = PDO::ERRMODE_EXCEPTION;
             }
 
+            if ($config['type'] === 'mysql' && version_compare(PHP_VERSION, '8.1.0', '<')) {
+                $config['option'][PDO::ATTR_EMULATE_PREPARES] = false;
+                $config['option'][PDO::ATTR_STRINGIFY_FETCHES] = false;
+            }
+
             self::$instance[$key] = new Medoo($config);
         }
 
