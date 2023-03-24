@@ -76,12 +76,12 @@ class Utility
      * Two-dimensional array filter and enum maker
      * 
      * @param array $array 
-     * @param null|array $filter 
+     * @param array $filter 
      * @param null|string $enumKey
      * @param null|string $enumValue
      * @return array 
      */
-    public static function arrayFilter(array $array, ?array $filter, ?string $enumKey = null, ?string $enumValue = null): array
+    public static function arrayFilter(array $array, array $filter = [], ?string $enumKey = null, ?string $enumValue = null): array
     {
         if ($array) {
             if ($filter) {

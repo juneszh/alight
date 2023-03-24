@@ -603,7 +603,7 @@ Status Definition:
 
 For example:
 ```php
-\Alight\Response::api(0, ['name' => 'alight']);
+\Alight\Response::api(0, null, ['name' => 'alight']);
 // Response:
 // HTTP 200 OK
 //

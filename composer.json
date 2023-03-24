@@ -34,6 +34,6 @@
         "symfony/cache": ">=5.4",
         "psr/simple-cache": ">=1.0",
         "monolog/monolog": ">=2.7",
-        "filp/whoops": "^2.14"
+        "filp/whoops": "^2.15"
     }
 }

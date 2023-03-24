@@ -93,38 +93,26 @@ class Response
      * Api response template base json/jsonp format
      * 
      * @param int $error 
-     * @param mixed $content string: message, array|object: data
+     * @param null|string $message 
+     * @param null|array $data
      * @param string $charset 
      * @throws Exception 
      */
-    public static function api(int $error = 0, $content = null, string $charset = 'utf-8')
+    public static function api(int $error = 0, ?string $message = null, ?array $data = null, string $charset = 'utf-8')
     {
-        $status = 200;
+        $status = $error ?: 200;
         $json = [
-            'error' => (int)$error,
-            'message' => self::HTTP_STATUS[$status],
+            'error' => $error,
+            'message' => self::HTTP_STATUS[$status] ?? '',
             'data' => new ArrayObject()
         ];
 
-        if ($error && isset(self::HTTP_STATUS[$error])) {
-            $status = $error;
-            $json['message'] = self::HTTP_STATUS[$error];
+        if ($message !== null) {
+            $json['message'] = $message;
         }
 
-        if (!is_null($content)) {
-            if (is_array($content)) {
-                if ($content) {
-                    if (array_keys($content) !== range(0, count($content) - 1)) {
-                        $json['data'] = $content;
-                    } else {
-                        throw new Exception('api() expects \'data\' to be associative array or arrayObject.');
-                    }
-                }
-            } elseif (is_object($content)) {
-                $json['data'] = $content;
-            } else {
-                $json['message'] = $content;
-            }
+        if ($data !== null){
+            $json['data'] = $data;
         }
 
         $jsonEncode = json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
