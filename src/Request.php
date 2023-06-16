@@ -113,6 +113,23 @@ class Request
     }
 
     /**
+     * Simulate $_REQUEST, contains the contents of get(), post()
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function request(string $key = '', $default = null, $set = null)
+    {
+        static $request = null;
+        if ($request === null) {
+            $request = array_replace_recursive(self::get(), self::post());
+        }
+        return self::getter($request, $key, $default, $set);
+    }
+
+    /**
      * Get $_COOKIE value, or $default if unset
      * 
      * @param string $key 
@@ -127,6 +144,23 @@ class Request
             $cookie = $_COOKIE ?: [];
         }
         return self::getter($cookie, $key, $default, $set);
+    }
+
+    /**
+     * Get $_FILES value, or $default if unset
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function file(string $key = '', $default = null, $set = null)
+    {
+        static $file = null;
+        if ($file === null) {
+            $file = $_FILES ?: [];
+        }
+        return self::getter($file, $key, $default, $set);
     }
 
     /**
