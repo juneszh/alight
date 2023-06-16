@@ -39,21 +39,21 @@ class Job
     /**
      * Start run with fork process
      * 
-     * @param mixed $config 
      * @param null|string $execCode 
      * @param null|string $execJob 
      * @return never 
      * @throws InvalidArgumentException 
      * @throws Exception 
      */
-    public static function start($config, ?string $execCode = null, ?string $execJob = null)
+    public static function start(?string $execCode = null, ?string $execJob = null)
     {
-        Config::init($config);
         $timezone = Config::get('app', 'timezone');
         if ($timezone) {
             date_default_timezone_set($timezone);
         }
+
         ErrorHandler::init();
+
         self::$startTime = time();
 
         if ($execCode) {

@@ -25,7 +25,6 @@ class App
     /**
      * Starts the framework
      * 
-     * @param mixed $config 
      * @throws InvalidArgumentException 
      * @throws Exception 
      * @throws LogicException 
@@ -34,10 +33,8 @@ class App
      * @throws ExceptionInvalidArgumentException 
      * @throws ExceptionInvalidArgumentException 
      */
-    public static function start($config)
+    public static function start()
     {
-        Config::init($config);
-
         $timezone = Config::get('app', 'timezone');
         if ($timezone) {
             date_default_timezone_set($timezone);

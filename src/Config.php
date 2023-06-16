@@ -13,10 +13,11 @@ declare(strict_types=1);
 
 namespace Alight;
 
+use Exception;
+
 class Config
 {
-    public static string $configFile = '';
-    public static array $config = [
+    private static array $default = [
         'app' => [
             'debug' => false, // Whether to enable error message output
             'timezone' => null, // Default timezone follows php.ini
@@ -82,23 +83,17 @@ class Config
     /**
      * Merge default configuration and user configuration
      * 
-     * @param mixed $config 
      */
-    public static function init($config)
+    private static function init()
     {
-        if ($config) {
-            if (is_string($config)) {
-                $configFile = App::root($config);
-                if (file_exists($configFile)) {
-                    $config = require $configFile;
-                    self::$configFile = $configFile;
-                }
-            }
-
-            if (is_array($config)) {
-                self::$config = array_replace_recursive(self::$config, $config);
-            }
+        $configFile = App::root('config/app.php');
+        if (!file_exists($configFile)) {
+            throw new Exception('Missing configuration file: config/app.php');
         }
+
+        $userConfig = require $configFile;
+
+        return array_replace_recursive(self::$default, $userConfig);
     }
 
     /**
@@ -110,6 +105,10 @@ class Config
      */
     public static function get(string $class, ?string $option = null)
     {
-        return $option !== null ? (self::$config[$class][$option] ?? null) : (self::$config[$class] ?? null);
+        static $config = null;
+        if ($config === null) {
+            $config = self::init();
+        }
+        return $option !== null ? ($config[$class][$option] ?? null) : ($config[$class] ?? null);
     }
 }

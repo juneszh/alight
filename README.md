@@ -42,7 +42,7 @@ server {
     listen 80;
     listen [::]:80;
 
-    root /var/www/html/{PROJECT_DIRECTORY}/public;
+    root /var/www/{PROJECT_DIRECTORY}/public;
 
     index index.php;
 
@@ -60,15 +60,13 @@ server {
 ```
 
 ## Configuration
-All of the configuration options for the Alight framework are initialized by `Alight\App::start()`
+All of the configuration options for the Alight framework will be imported from the file 'config/app.php', which you need to create yourself. For example:
 
+File: config/app.php
 ```php
-// Import a configuration file (recommended)
-// You can find this code in the file "config/bootstrap.php"
-Alight\App::start('config/app.php');
+<?php
 
-// It is also possible import the configuration array directly
-Alight\App::start([
+return [
     'app' => [
         'debug' => true,
         'timezone' => 'Europe/Kiev'
@@ -81,7 +79,7 @@ Alight\App::start([
         'username' => 'root',
         'password' => '',
     ],
-]);
+];
 ```
 
 ### Available Configuration
@@ -97,6 +95,8 @@ Alight\Route::get('/', 'Controller::index');
 
 File: config/app.php
 ```php
+<?php
+
 return [
     'route' => 'config/route/web.php'
     // Also supports multiple files
@@ -106,6 +106,8 @@ return [
 
 By the way, the route configuration supports importing specified files for **subdomains**:
 ```php
+<?php
+
 return [
     'route' => [
         //Import on any request
@@ -151,8 +153,11 @@ Alight\Route::get('/user/{id:\d+}', 'handler');
 // Matches /user/foobar, but not /user/foo/bar
 Alight\Route::get('/user/{name}', 'handler');
 
-// Matches /user/foo/bar as well
+// Matches /user/foo/bar as well, using wildcards
 Alight\Route::get('/user/{name:.+}', 'handler');
+
+// The /{name} suffix is optional
+Alight\Route::get('/user[/{name}]', 'handler');
 ```
 **nikic/fast-route** handles all regular expressions in the routing path. See [FastRoute Usage](https://github.com/nikic/FastRoute#defining-routes) for details.
 
@@ -290,6 +295,8 @@ Alight passes the 'database' configuration to the **catfan/medoo** directly. For
 
 File: config/app.php
 ```php
+<?php
+
 return [
     'database' => [
         'type' => 'mysql',
@@ -344,6 +351,8 @@ Alight supports multiple cache drivers and multiple cache interfaces with **symf
 
 File: config/app.php
 ```php
+<?php
+
 return [
     'cache' => [
         'type' => 'file',
@@ -418,6 +427,8 @@ $redis->lPush('list', 'first');
 
 File: config/app.php
 ```php
+<?php
+
 return [
     'app' => [
         'cacheAdapter' => [svc\Cache::class, 'adapter'],
@@ -469,6 +480,8 @@ Alight catches all errors via `Alight\App::start()`. When turn on 'debug' in the
 
 File: config/app.php
 ```php
+<?php
+
 return [
     'app' => [
         'debug' => true,
@@ -483,6 +496,8 @@ You can override these default behaviors by app configuration. For example:
 
 File: config/app.php
 ```php
+<?php
+
 return [
     'app' => [
         'errorHandler' => [svc\Error::class, 'catch'],
@@ -534,11 +549,11 @@ class Error
 If you need to run php scripts in the background periodically.
 ### Step 1: Setting Up CRON
 ```bash
-$ contab -e
+$ sudo contab -e
 ```
 Add the following to the end line:
 ```bash
-* * * * * sudo -u www-data /usr/bin/php /var/www/html/{PROJECT_DIRECTORY}/app/scheduler.php >> /dev/null 2>&1
+* * * * * sudo -u www-data /usr/bin/php /var/www/{PROJECT_DIRECTORY}/app/scheduler.php >> /dev/null 2>&1
 ```
 
 ### Step 2: Create Jobs
@@ -567,8 +582,8 @@ Alight\Job::call('handler')->hourly()->timeLimit(7200);// 7200 seconds
 Alight provides `Alight\App::root()` to standardize the format of file paths in project. 
 
 ```php
-// Suppose the absolute path of the project is /var/www/html/my_project/
-\Alight\App::root('public/favicon.ico'); // /var/www/html/my_project/public/favicon.ico
+// Suppose the absolute path of the project is /var/www/my_project/
+\Alight\App::root('public/favicon.ico'); // /var/www/my_project/public/favicon.ico
 
 // Of course, you can also use absolute path files with the first character  '/'
 \Alight\App::root('/var/data/config/web.php');
@@ -577,8 +592,8 @@ Alight provides `Alight\App::root()` to standardize the format of file paths in 
 The file paths in the configuration are all based on the `Alight\App::root()`. For example:
 ```php
 Alight\App::start([
-    'route' => 'config/route/web.php',     // /var/www/html/my_project/config/route/web.php
-    'job' => 'config/job.php'          // /var/www/html/my_project/config/job.php
+    'route' => 'config/route/web.php',     // /var/www/my_project/config/route/web.php
+    'job' => 'config/job.php'          // /var/www/my_project/config/job.php
 ]);
 ```
 ### API Response
