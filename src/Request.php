@@ -16,26 +16,117 @@ namespace Alight;
 class Request
 {
     public const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'TRACE', 'PATCH'];
-    public static array $query;
-    public static array $body;
-    public static array $data;
-    public static array $cookie;
 
     /**
-     * Initializes variables
+     * Property getter
      * 
+     * @param string $property 
+     * @param string $key 
+     * @param mixed $default  
+     * @param mixed $set 
+     * @return mixed 
      */
-    public static function init()
+    private static function getter(array $property, string $key, $default, $set = null)
     {
-        self::$query = $_GET ?: [];
-        self::$body = $_POST ?: [];
-        if (in_array(self::method(), ['POST', 'PUT', 'DELETE', 'PATCH']) && self::isJson()) {
-            if (Utility::isJson(self::body())) {
-                self::$body = json_decode(self::body(), true);
+        if ($key) {
+            if ($set !== null) {
+                $property[$key] = $set;
+            }
+
+            if (isset($property[$key])) {
+                switch (gettype($default)) {
+                    case 'boolean':
+                        return (bool) $property[$key];
+                    case 'integer':
+                        return (int) $property[$key];
+                    case 'double':
+                        return (float) $property[$key];
+                    case 'string':
+                        return (string) $property[$key];
+                    case 'array':
+                        return (array) $property[$key];
+                    default:
+                        return $property[$key];
+                }
+            } else {
+                return $default;
+            }
+        } else {
+            return $property;
+        }
+    }
+
+    /**
+     * Get HTTP header value, or $default if unset
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function header(string $key = '', $default = null, $set = null)
+    {
+        static $header = null;
+        if ($header === null) {
+            $header = apache_request_headers() ?: [];
+        }
+        return self::getter($header, $key, $default, $set);
+    }
+
+    /**
+     * Get $_GET value, or $default if unset
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function get(string $key = '', $default = null, $set = null)
+    {
+        static $get = null;
+        if ($get === null) {
+            $get = $_GET ?: [];
+        }
+        return self::getter($get, $key, $default, $set);
+    }
+
+    /**
+     * Get $_POST value (including json body), or $default if unset
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function post(string $key = '', $default = null, $set = null)
+    {
+        static $post = null;
+        if ($post === null) {
+            $post = $_POST ?: [];
+            if (in_array(self::method(), ['POST', 'PUT', 'DELETE', 'PATCH']) && self::isJson()) {
+                if (Utility::isJson(self::body())) {
+                    $post = json_decode(self::body(), true);
+                }
             }
         }
-        self::$data = array_replace_recursive(self::$query, self::$body);
-        self::$cookie = $_COOKIE ?: [];
+        return self::getter($post, $key, $default, $set);
+    }
+
+    /**
+     * Get $_COOKIE value, or $default if unset
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function cookie(string $key = '', $default = null, $set = null)
+    {
+        static $cookie = null;
+        if ($cookie === null) {
+            $cookie = $_COOKIE ?: [];
+        }
+        return self::getter($cookie, $key, $default, $set);
     }
 
     /**
@@ -115,8 +206,10 @@ class Request
         if ($method === null) {
             if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
                 $method = strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
-            } elseif (isset(Request::$data['_method'])) {
-                $method = strtoupper(Request::$data['_method']);
+            } elseif (Request::post('_method')) {
+                $method = strtoupper(Request::post('_method'));
+            } elseif (Request::get('_method')) {
+                $method = strtoupper(Request::get('_method'));
             } else {
                 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? '');
             }

@@ -45,8 +45,6 @@ class App
 
         ErrorHandler::init();
 
-        Request::init();
-
         Response::cors(false);
 
         Router::start();

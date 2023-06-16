@@ -35,7 +35,7 @@ class ErrorHandler
             if (Config::get('app', 'debug')) {
                 if (Request::isAjax()) {
                     $whoops->pushHandler(function ($exception, $inspector, $run) {
-                        Response::api(500, Formatter::formatExceptionAsDataArray($inspector, false));
+                        Response::api(500, null, Formatter::formatExceptionAsDataArray($inspector, false));
                         return Handler::QUIT;
                     });
                 } else {
