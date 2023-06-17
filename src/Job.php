@@ -52,7 +52,7 @@ class Job
             date_default_timezone_set($timezone);
         }
 
-        ErrorHandler::init();
+        ErrorHandler::start();
 
         self::$startTime = time();
 

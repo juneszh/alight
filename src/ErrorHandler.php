@@ -26,9 +26,8 @@ class ErrorHandler
      * 
      * @throws InvalidArgumentException 
      */
-    public static function init()
+    public static function start()
     {
-
         $whoops = new Run;
 
         if (Request::method()) {

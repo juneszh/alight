@@ -83,15 +83,15 @@ class Route
     }
 
     /**
-     * Add 'GET' method route
+     * Add 'OPTIONS' method route
      * 
      * @param string $pattern 
      * @param callable $handler 
      * @return RouteUtility 
      */
-    public static function get(string $pattern, callable $handler): RouteUtility
+    public static function options(string $pattern, callable $handler): RouteUtility
     {
-        return self::addRoute(['GET'], $pattern, $handler);
+        return self::addRoute(['OPTIONS'], $pattern, $handler);
     }
 
     /**
@@ -104,6 +104,18 @@ class Route
     public static function head(string $pattern, callable $handler): RouteUtility
     {
         return self::addRoute(['HEAD'], $pattern, $handler);
+    }
+
+    /**
+     * Add 'GET' method route
+     * 
+     * @param string $pattern 
+     * @param callable $handler 
+     * @return RouteUtility 
+     */
+    public static function get(string $pattern, callable $handler): RouteUtility
+    {
+        return self::addRoute(['GET'], $pattern, $handler);
     }
 
     /**
@@ -143,30 +155,6 @@ class Route
     }
 
     /**
-     * Add 'OPTIONS' method route
-     * 
-     * @param string $pattern 
-     * @param callable $handler 
-     * @return RouteUtility 
-     */
-    public static function options(string $pattern, callable $handler): RouteUtility
-    {
-        return self::addRoute(['OPTIONS'], $pattern, $handler);
-    }
-
-    /**
-     * Add 'TRACE' method route
-     * 
-     * @param string $pattern 
-     * @param callable $handler 
-     * @return RouteUtility 
-     */
-    public static function trace(string $pattern, callable $handler): RouteUtility
-    {
-        return self::addRoute(['TRACE'], $pattern, $handler);
-    }
-
-    /**
      * Add 'PATCH' method route
      * 
      * @param string $pattern 
@@ -200,7 +188,7 @@ class Route
      */
     public static function any(string $pattern, callable $handler): RouteUtility
     {
-        return self::addRoute(self::$anyMethods ?: Request::HTTP_METHODS, $pattern, $handler);
+        return self::addRoute(self::$anyMethods ?: Request::ALLOW_METHODS, $pattern, $handler);
     }
 
     /**

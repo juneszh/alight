@@ -40,9 +40,7 @@ class App
             date_default_timezone_set($timezone);
         }
 
-        ErrorHandler::init();
-
-        Response::cors(false);
+        ErrorHandler::start();
 
         Router::start();
     }

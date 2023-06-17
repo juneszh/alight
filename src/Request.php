@@ -15,7 +15,7 @@ namespace Alight;
 
 class Request
 {
-    public const HTTP_METHODS = ['GET', 'HEAD', 'POST', 'DELETE', 'PUT', 'OPTIONS', 'TRACE', 'PATCH'];
+    public const ALLOW_METHODS = ['OPTIONS', 'HEAD', 'GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
 
     /**
      * Property getter

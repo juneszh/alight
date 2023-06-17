@@ -49,14 +49,14 @@ class Router
      */
     public static function start()
     {
-        if (!in_array(Request::method(), Request::HTTP_METHODS)) {
-            if (Request::isAjax()) {
-                Response::api(404);
-            } else {
-                Response::errorPage(404);
-            }
-            exit;
-        }
+        // if (!in_array(Request::method(), Request::ALLOW_METHODS)) {
+        //     if (Request::isAjax()) {
+        //         Response::api(404);
+        //     } else {
+        //         Response::errorPage(404);
+        //     }
+        //     exit;
+        // }
 
         $routeResult = self::dispatch(self::configFiles(), Request::method(), rtrim(Request::path(), '/'));
         if (!$routeResult || $routeResult[0] !== Dispatcher::FOUND) {
@@ -82,6 +82,8 @@ class Router
                 $routeData['cors'] = '*';
             }
             Response::cors($routeData['cors']);
+        } else {
+            Response::cors();
         }
 
         if ($routeData['beforeHandler'] ?? []) {
@@ -170,7 +172,7 @@ class Router
         $result = [];
         if ($configFiles) {
             if ($method === 'OPTIONS') {
-                header('Allow: ' . join(', ', Request::HTTP_METHODS));
+                header('Allow: ' . join(', ', Request::ALLOW_METHODS));
             }
 
             foreach ($configFiles as $_configFile) {
@@ -201,7 +203,7 @@ class Router
                         $latestTime = substr($configStorage, -10);
                         foreach ($oldCacheDirs as $_oldDir) {
                             if (substr($_oldDir, -10) !== $latestTime) {
-                                foreach (Request::HTTP_METHODS as $_method) {
+                                foreach (Request::ALLOW_METHODS as $_method) {
                                     if (is_file($_oldDir . '/' . $_method . '.php')) {
                                         @unlink($_oldDir . '/' . $_method . '.php');
                                     }
