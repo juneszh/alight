@@ -100,7 +100,7 @@ class Response
      */
     public static function api(int $error = 0, ?string $message = null, ?array $data = null, string $charset = 'utf-8')
     {
-        $status = $error ?: 200;
+        $status = isset(self::HTTP_STATUS[$error]) ? $error : 200;
         $json = [
             'error' => $error,
             'message' => self::HTTP_STATUS[$status] ?? '',
@@ -199,7 +199,7 @@ class Response
      * 
      * @param mixed $force 
      */
-    public static function cors($force = true)
+    public static function cors($force = false)
     {
         $cors = false;
 
@@ -236,8 +236,8 @@ class Response
             }
 
             if (Request::method() === 'OPTIONS') {
-                header('Access-Control-Allow-Methods: ' . join(', ', Request::HTTP_METHODS));
-                header('Access-Control-Allow-Headers: Content-Type, Accept, Accept-Language, Content-Language, Authorization, X-Requested-With');
+                header('Access-Control-Allow-Methods: ' . join(', ', Request::ALLOW_METHODS));
+                header('Access-Control-Allow-Headers: Content-Type, Origin, X-Requested-With, Authorization');
                 header('Access-Control-Max-Age: 600');
             }
         }
