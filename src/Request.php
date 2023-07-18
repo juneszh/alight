@@ -301,6 +301,21 @@ class Request
     }
 
     /**
+     * Get the request origin
+     * 
+     * @return string 
+     */
+    public static function origin(): string
+    {
+        static $origin = null;
+        if ($origin === null) {
+            $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        }
+
+        return $origin;
+    }
+
+    /**
      * Get the base url
      * 
      * @return string 

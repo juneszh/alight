@@ -53,18 +53,18 @@ class Route
     /**
      * Add route
      * 
-     * @param array $method 
+     * @param array $methods 
      * @param string $pattern 
      * @param callable $handler 
      * @return RouteUtility 
      */
-    private static function addRoute(array $method, string $pattern, callable $handler): RouteUtility
+    private static function addRoute(array $methods, string $pattern, callable $handler): RouteUtility
     {
         ++self::$index;
         $pattern = (self::$group ? '/' . self::$group : '') . '/' . trim($pattern, '/');
 
         $config = [
-            'method' => $method,
+            'methods' => $methods,
             'pattern' => rtrim($pattern, '/'),
             'handler' => $handler,
         ];
@@ -169,14 +169,14 @@ class Route
     /**
      * Map some methods route
      * 
-     * @param array $method 
+     * @param array $methods 
      * @param string $pattern 
      * @param callable $handler 
      * @return RouteUtility 
      */
-    public static function map(array $method, string $pattern, callable $handler): RouteUtility
+    public static function map(array $methods, string $pattern, callable $handler): RouteUtility
     {
-        return self::addRoute($method, $pattern, $handler);
+        return self::addRoute($methods, $pattern, $handler);
     }
 
     /**

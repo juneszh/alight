@@ -61,14 +61,17 @@ class RouteUtility
     }
 
     /**
-     * Send a CORS header
+     * Set CORS header for current method and 'OPTION'
      * 
-     * @param mixed $origin true|*|{custom origin}
+     * @param null|string|array $allowOrigin default|origin|*|{custom_origin}|[custom_origin1, custom_origin2] 
+     * @param null|array $allowHeaders 
+     * @param null|array $allowMethods 
      * @return RouteUtility 
      */
-    public function cors($origin = true)
+    public function cors($allowOrigin = 'default', ?array $allowHeaders = null, ?array $allowMethods = null)
     {
-        Route::$config[$this->index][__FUNCTION__] = $origin;
+        Route::$config[$this->index][__FUNCTION__] = [$allowOrigin, $allowHeaders, $allowMethods];
+        Route::options(Route::$config[$this->index]['pattern'], [Response::class, 'cors', [$allowOrigin, $allowHeaders, $allowMethods]])->cache(0);
         return $this;
     }
 }

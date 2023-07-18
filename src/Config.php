@@ -23,61 +23,74 @@ class Config
             'timezone' => null, // Default timezone follows php.ini
             'storagePath' => 'storage', // The storage path of the files generated at runtime by framework
             'domainLevel' => 2, // Get subdomains for route. For example, set 3 to match 'a' when the domain is like 'a.b.co.jp'
-            'corsDomain' => [], // Which domains need to send cors headers
+            'corsDomain' => null, // Set a default domain array for CORS, or follow 'origin' header when set 'origin'
+            'corsHeader' => null, // Set a default header array for CORS
             'cacheAdapter' => null, // Extended cache adapter based on symfony/cache
             'errorHandler' => null, // Override error handler
             'errorPageHandler' => null, // Override error page handler
         ],
+
+        /* 
+        'route' => 'config/route.php',
+        'route' => ['config/route/www.php', 'config/route/api.php'],
+        'route' => [
+            '*' => 'config/route/www.php',
+            'api' => ['config/route/api.php', 'config/route/api2.php'],
+        ],
+         */
         'route' => null,
-        // 'route' => 'config/route.php',
-        // 'route' => ['config/route/www.php', 'config/route/api.php'],
-        // 'route' => [
-        //     '*' => 'config/route/www.php',
-        //     'api' => ['config/route/api.php', 'config/route/api2.php'],
-        // ],
+
+        /* 
+        'database' => [
+            'type' => 'mysql',
+            'host' => '127.0.0.1',
+            'database' => 'alight',
+            'username' => '',
+            'password' => '',
+        ],
+        'database' => [
+            'main' => [ 
+                'type' => 'mysql',
+                'host' => '127.0.0.1',
+                'database' => 'alight',
+                'username' => '',
+                'password' => '',
+            ],
+            'remote' => [ 
+                'type' => 'mysql',
+                'host' => '1.1.1.1',
+                'database' => 'alight_remote',
+                'username' => '',
+                'password' => '',
+            ],
+        ], 
+         */
         'database' => [], //More options see https://medoo.in/api/new
-        // 'database' => [
-        //     'type' => 'mysql',
-        //     'host' => '127.0.0.1',
-        //     'database' => 'alight',
-        //     'username' => '',
-        //     'password' => '',
-        // ],
-        // 'database' => [
-        //     'main' => [ 
-        //         'type' => 'mysql',
-        //         'host' => '127.0.0.1',
-        //         'database' => 'alight',
-        //         'username' => '',
-        //         'password' => '',
-        //     ],
-        //     'remote' => [ 
-        //         'type' => 'mysql',
-        //         'host' => '1.1.1.1',
-        //         'database' => 'alight_remote',
-        //         'username' => '',
-        //         'password' => '',
-        //     ],
-        // ],
+
+        /* 
+        'cache' => [
+            'file' => [ 
+                'type' => 'file',
+            ],
+            'memcached' => [ 
+                'type' => 'memcached',
+                'dsn' => 'memcached://localhost',
+            ],
+            'redis' => [ 
+                'type' => 'redis',
+                'dsn' => 'redis://localhost',
+            ],
+        ], 
+         */
         'cache' => [
             'type' => 'file',
         ],
-        // 'cache' => [
-        //     'file' => [ 
-        //         'type' => 'file',
-        //     ],
-        //     'memcached' => [ 
-        //         'type' => 'memcached',
-        //         'dsn' => 'memcached://localhost',
-        //     ],
-        //     'redis' => [ 
-        //         'type' => 'redis',
-        //         'dsn' => 'redis://localhost',
-        //     ],
-        // ],
+
+        /* 
+        'job' => 'config/job.php',
+        'job' => ['config/job/hourly.php', 'config/job/daily.php'], 
+         */
         'job' => null
-        // 'job' => 'config/job.php',
-        // 'job' => ['config/job/hourly.php', 'config/job/daily.php'],
     ];
 
     /**

@@ -49,70 +49,61 @@ class Router
      */
     public static function start()
     {
-        // if (!in_array(Request::method(), Request::ALLOW_METHODS)) {
-        //     if (Request::isAjax()) {
-        //         Response::api(404);
-        //     } else {
-        //         Response::errorPage(404);
-        //     }
-        //     exit;
-        // }
-
         $routeResult = self::dispatch(self::configFiles(), Request::method(), rtrim(Request::path(), '/'));
+
         if (!$routeResult || $routeResult[0] !== Dispatcher::FOUND) {
-            if (Request::method() !== 'OPTIONS') {
-                if (Request::isAjax()) {
-                    Response::api(404);
-                } else {
-                    Response::errorPage(404);
-                }
-            }
-            exit;
-        }
-
-        $routeData = $routeResult[1];
-        $routeArgs = $routeResult[2];
-
-        if (isset($routeData['cache'])) {
-            Response::cache($routeData['cache']);
-        }
-
-        if (isset($routeData['cors'])) {
-            if (($routeData['cache'] ?? 0) > 0) {
-                $routeData['cors'] = '*';
-            }
-            Response::cors($routeData['cors']);
-        } else {
-            Response::cors();
-        }
-
-        if ($routeData['beforeHandler'] ?? []) {
-            if (!is_callable($routeData['beforeHandler'][0])) {
-                throw new Exception('Invalid beforeHandler specified.');
-            }
-            call_user_func_array($routeData['beforeHandler'][0], $routeData['beforeHandler'][1]);
-        }
-
-        if (isset($routeData['auth'])) {
-            if ($routeData['authHandler'] ?? []) {
-                if (!is_callable($routeData['authHandler'][0])) {
-                    throw new Exception('Invalid authHandler specified.');
-                }
-                self::$authId = call_user_func_array($routeData['authHandler'][0], $routeData['authHandler'][1]);
+            if (Request::method() === 'OPTIONS' && Config::get('app', 'corsDomain')) {
+                Response::cors('global');
+                Response::cache(0);
+            } else if (Request::isAjax()) {
+                Response::api(404);
             } else {
-                throw new Exception('Missing authHandler definition.');
+                Response::errorPage(404);
+            }
+        } else {
+            $routeData = $routeResult[1];
+            $routeArgs = $routeResult[2];
+
+            if (isset($routeData['cache'])) {
+                Response::cache($routeData['cache']);
             }
 
-            if ($routeData['cd'] ?? 0) {
-                self::coolDown($routeData['pattern'], $routeData['cd']);
+            if (isset($routeData['beforeHandler'])) {
+                if (!is_callable($routeData['beforeHandler'][0])) {
+                    throw new Exception('Invalid beforeHandler specified.');
+                }
+                call_user_func_array($routeData['beforeHandler'][0], $routeData['beforeHandler'][1]);
             }
-        }
 
-        if (!is_callable($routeData['handler'])) {
-            throw new Exception('Invalid handler specified.');
-        }
+            if (isset($routeData['auth'])) {
+                if ($routeData['authHandler'] ?? []) {
+                    if (!is_callable($routeData['authHandler'][0])) {
+                        throw new Exception('Invalid authHandler specified.');
+                    }
+                    self::$authId = call_user_func_array($routeData['authHandler'][0], $routeData['authHandler'][1]);
+                } else {
+                    throw new Exception('Missing authHandler definition.');
+                }
 
-        call_user_func_array($routeData['handler'], $routeArgs);
+                if ($routeData['cd'] ?? 0) {
+                    self::coolDown($routeData['pattern'], $routeData['cd']);
+                }
+            }
+
+            if (isset($routeData['cors'])) {
+                Response::cors($routeData['cors'][0], $routeData['cors'][1], $routeData['cors'][2]);
+            }
+
+            if (Request::method() === 'OPTIONS' && is_array($routeData['handler']) && count($routeData['handler']) === 3){
+                $routeArgs = array_pop($routeData['handler']);
+            }
+
+            if (!is_callable($routeData['handler'])) {
+                throw new Exception('Invalid handler specified.');
+            }
+
+            call_user_func_array($routeData['handler'], $routeArgs);
+        }
     }
 
     /**
@@ -167,14 +158,11 @@ class Router
      * @throws LogicException 
      * @throws RuntimeException 
      */
-    public static function dispatch(array $configFiles, string $method, string $path = ''): array
+    private static function dispatch(array $configFiles, string $method, string $path = ''): array
     {
         $result = [];
-        if ($configFiles) {
-            if ($method === 'OPTIONS') {
-                header('Allow: ' . join(', ', Request::ALLOW_METHODS));
-            }
 
+        if ($configFiles && in_array($method, Request::ALLOW_METHODS)) {
             foreach ($configFiles as $_configFile) {
                 $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_configFile, '.php') . '/' . filemtime($_configFile);
                 if (!is_dir($configStorage)) {
@@ -187,11 +175,11 @@ class Router
                     Route::init();
                     require $_configFile;
                     foreach (Route::$config as $_route) {
-                        if (!isset($_route['method'])) {
+                        if (!isset($_route['methods'])) {
                             continue;
                         }
 
-                        if (!in_array($method, $_route['method'])) {
+                        if (!in_array($method, $_route['methods'])) {
                             continue;
                         }
 
@@ -261,8 +249,8 @@ class Router
         if (PHP_SAPI !== 'cli') {
             throw new Exception('PHP-CLI required.');
         }
-        
-        exec('rm -rf '. App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/');
+
+        exec('rm -rf ' . App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/');
     }
 
     /**

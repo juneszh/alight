@@ -111,7 +111,7 @@ class Response
             $json['message'] = $message;
         }
 
-        if ($data !== null){
+        if ($data !== null) {
             $json['data'] = $data;
         }
 
@@ -194,51 +194,56 @@ class Response
         }
     }
 
-    /** 
+    /**
      * Send a set of CORS headers
      * 
-     * @param mixed $force 
+     * @param null|string|array $allowOrigin 
+     * @param null|array $allowHeaders 
+     * @param null|array $allowMethods 
+     * @throws Exception 
      */
-    public static function cors($force = false)
+    public static function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null)
     {
-        $cors = false;
+        $origin = Request::origin();
+        if ($allowOrigin && $origin) {
+            $originHost = parse_url($origin)['host'] ?? '';
+            $host = Request::host();
+            if ($originHost && $originHost !== $host) {
+                if ($allowOrigin === 'default') {
+                    $allowOrigin = Config::get('app', 'corsDomain');
+                }
 
-        $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-        if ($origin) {
-            if ($force) {
-                $cors = is_bool($force) ? $origin : $force;
-            } else {
-                $host = $_SERVER['HTTP_HOST'] ?? '';
-                $originHost = parse_url($origin)['host'] ?? '';
-                if ($originHost && substr($originHost, -strlen($host)) !== $host) {
-                    $configCORS = Config::get('app', 'cors') ?? [];
-                    if ($configCORS) {
-                        foreach ($configCORS as $domain) {
-                            if ($domain === '*' || substr($originHost, -strlen($domain)) === $domain) {
-                                $cors = $origin;
-                                break;
-                            }
+                if (is_array($allowOrigin)) {
+                    foreach ($allowOrigin as $domain) {
+                        if ($domain && substr($originHost, -strlen($domain)) === $domain) {
+                            $allowOrigin = $origin;
+                            break;
                         }
                     }
+                } elseif ($allowOrigin === '*') {
+                    $allowOrigin = '*';
+                } elseif ($allowOrigin === 'origin') {
+                    $allowOrigin = $origin;
+                } elseif ($allowOrigin && substr($originHost, -strlen($allowOrigin)) === $allowOrigin) {
+                    $allowOrigin = $origin;
+                } else {
+                    $allowOrigin = null;
                 }
-            }
-        }
 
-        if ($cors) {
-            header('Access-Control-Allow-Origin: ' . $cors);
+                if ($allowOrigin) {
+                    header('Access-Control-Allow-Origin: ' . $allowOrigin);
+                    header('Access-Control-Allow-Credentials: true');
+                    header('Vary: Origin');
 
-            if ($cors === '*') {
-                header_remove('Access-Control-Allow-Credentials');
-                header_remove('Vary');
-            } else {
-                header('Access-Control-Allow-Credentials: true');
-                header('Vary: Origin');
-            }
-
-            if (Request::method() === 'OPTIONS') {
-                header('Access-Control-Allow-Methods: ' . join(', ', Request::ALLOW_METHODS));
-                header('Access-Control-Allow-Headers: Content-Type, Origin, X-Requested-With, Authorization');
-                header('Access-Control-Max-Age: 600');
+                    if (Request::method() === 'OPTIONS') {
+                        http_response_code(204);
+                        $allowHeaders = $allowHeaders ?: (Config::get('app', 'corsHeader') ?: ['Content-Type', 'Origin', 'X-Requested-With', 'Authorization']);
+                        $allowMethods = $allowMethods ?: Request::ALLOW_METHODS;
+                        header('Access-Control-Allow-Headers: ' . join(', ', $allowHeaders));
+                        header('Access-Control-Allow-Methods: ' . join(', ', $allowMethods));
+                        header('Access-Control-Max-Age: 86400');
+                    }
+                }
             }
         }
     }
