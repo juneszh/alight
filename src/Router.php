@@ -49,12 +49,18 @@ class Router
      */
     public static function start()
     {
-        $routeResult = self::dispatch(self::configFiles(), Request::method(), rtrim(Request::path(), '/'));
+        if (Request::method() === 'OPTIONS') {
+            http_response_code(204);
+        }
 
+        $routeResult = self::dispatch(self::configFiles(), Request::method(), rtrim(Request::path(), '/'));
         if (!$routeResult || $routeResult[0] !== Dispatcher::FOUND) {
-            if (Request::method() === 'OPTIONS' && Config::get('app', 'corsDomain')) {
-                Response::cors('global');
-                Response::cache(0);
+            if (Request::method() === 'OPTIONS') {
+                if (!Response::cors('default')) {
+                    http_response_code(404);
+                }
+            } else if (Request::method() === 'HEAD') {
+                http_response_code(404);
             } else if (Request::isAjax()) {
                 Response::api(404);
             } else {
@@ -62,7 +68,9 @@ class Router
             }
         } else {
             $routeData = $routeResult[1];
-            $routeArgs = $routeResult[2];
+            $routeArgs = $routeData['args'] ? array_merge($routeData['args'], $routeResult[2]) : $routeResult[2];
+
+            Response::cors('default');
 
             if (isset($routeData['cache'])) {
                 Response::cache($routeData['cache']);
@@ -92,10 +100,6 @@ class Router
 
             if (isset($routeData['cors'])) {
                 Response::cors($routeData['cors'][0], $routeData['cors'][1], $routeData['cors'][2]);
-            }
-
-            if (Request::method() === 'OPTIONS' && is_array($routeData['handler']) && count($routeData['handler']) === 3){
-                $routeArgs = array_pop($routeData['handler']);
             }
 
             if (!is_callable($routeData['handler'])) {

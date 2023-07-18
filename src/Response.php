@@ -179,7 +179,7 @@ class Response
      * 
      * @param int $maxAge 
      */
-    public static function cache($maxAge = 0)
+    public static function cache(int $maxAge)
     {
         if ($maxAge) {
             header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $maxAge) . ' GMT');
@@ -200,10 +200,13 @@ class Response
      * @param null|string|array $allowOrigin 
      * @param null|array $allowHeaders 
      * @param null|array $allowMethods 
+     * @return bool 
      * @throws Exception 
      */
     public static function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null)
     {
+        $cors = false;
+
         $origin = Request::origin();
         if ($allowOrigin && $origin) {
             $originHost = parse_url($origin)['host'] ?? '';
@@ -230,21 +233,24 @@ class Response
                     $allowOrigin = null;
                 }
 
-                if ($allowOrigin) {
+                if (is_string($allowOrigin)) {
+                    $cors = true;
                     header('Access-Control-Allow-Origin: ' . $allowOrigin);
                     header('Access-Control-Allow-Credentials: true');
                     header('Vary: Origin');
 
                     if (Request::method() === 'OPTIONS') {
-                        http_response_code(204);
                         $allowHeaders = $allowHeaders ?: (Config::get('app', 'corsHeader') ?: ['Content-Type', 'Origin', 'X-Requested-With', 'Authorization']);
                         $allowMethods = $allowMethods ?: Request::ALLOW_METHODS;
                         header('Access-Control-Allow-Headers: ' . join(', ', $allowHeaders));
                         header('Access-Control-Allow-Methods: ' . join(', ', $allowMethods));
                         header('Access-Control-Max-Age: 86400');
+                        self::cache(0);
                     }
                 }
             }
         }
+
+        return $cors;
     }
 }
