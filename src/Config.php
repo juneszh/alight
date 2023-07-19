@@ -17,6 +17,8 @@ use Exception;
 
 class Config
 {
+    public const FILE = 'config/app.php';
+    private static array $config = [];
     private static array $default = [
         'app' => [
             'debug' => false, // Whether to enable error message output
@@ -96,12 +98,14 @@ class Config
     /**
      * Merge default configuration and user configuration
      * 
+     * @return array 
+     * @throws Exception 
      */
     private static function init()
     {
-        $configFile = App::root('config/app.php');
+        $configFile = App::root(self::FILE);
         if (!file_exists($configFile)) {
-            throw new Exception('Missing configuration file: config/app.php');
+            throw new Exception('Missing configuration file: ' . self::FILE);
         }
 
         $userConfig = require $configFile;
@@ -112,16 +116,37 @@ class Config
     /**
      * Get config values
      * 
-     * @param string $class
-     * @param null|string $option
-     * @return mixed
+     * @param null|string $class 
+     * @param null|string $option 
+     * @return mixed 
+     * @throws Exception 
      */
-    public static function get(string $class, ?string $option = null)
+    public static function get(?string $class = null, ?string $option = null)
     {
-        static $config = null;
-        if ($config === null) {
-            $config = self::init();
+        if (!self::$config) {
+            self::$config = self::init();
         }
-        return $option !== null ? ($config[$class][$option] ?? null) : ($config[$class] ?? null);
+        return $class ? ($option ? (self::$config[$class][$option] ?? null) : (self::$config[$class] ?? null)) : self::$config;
+    }
+
+    /**
+     * Set config values
+     * 
+     * @param string $class 
+     * @param null|string $option 
+     * @param mixed $value 
+     * @throws Exception 
+     */
+    public static function set(string $class, ?string $option = null, $value)
+    {
+        if (!self::$config) {
+            self::$config = self::init();
+        }
+
+        if ($option) {
+            self::$config[$class][$option] = $value;
+        } else {
+            self::$config[$class] = $value;
+        }
     }
 }
