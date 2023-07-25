@@ -137,7 +137,7 @@ class Config
      * @param mixed $value 
      * @throws Exception 
      */
-    public static function set(string $class, ?string $option = null, $value)
+    public static function set(string $class, ?string $option, $value)
     {
         if (!self::$config) {
             self::$config = self::init();
