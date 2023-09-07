@@ -91,7 +91,6 @@ class Config
 
         /* 
         'job' => 'config/job.php',
-        'job' => ['config/job/hourly.php', 'config/job/daily.php'], 
          */
         'job' => null
     ];

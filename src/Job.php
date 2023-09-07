@@ -142,18 +142,12 @@ class Job
         $jobs = [];
 
         $configjob = Config::get('job');
-        if (is_string($configjob)) {
-            $configjob = [$configjob];
-        }
-
         if ($configjob) {
-            foreach ($configjob as $_file) {
-                $_file = App::root($_file);
-                if (!is_file($_file)) {
-                    throw new Exception('Missing job file: ' . $_file . '.');
-                }
-                require $_file;
+            $file = App::root($configjob);
+            if (!is_file($file)) {
+                throw new Exception('Missing job file: ' . $file . '.');
             }
+            require $file;
         }
 
         if (self::$config) {
