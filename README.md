@@ -68,8 +68,16 @@ File: config/app.php
 
 return [
     'app' => [
-        'debug' => true,
-        'timezone' => 'Europe/Kiev'
+        'debug' => false,
+        'timezone' => 'Europe/Kiev',
+        'storagePath' => 'storage',
+        'domainLevel' => 2,
+        'corsDomain' => null,
+        'corsHeaders' => null,
+        'corsMethods' => null,
+        'cacheAdapter' => null,
+        'errorHandler' => null,
+        'errorPageHandler' => null,
     ],
     'route' => 'config/route/web.php',
     'database' => [
@@ -78,6 +86,9 @@ return [
         'database' => 'alight',
         'username' => 'root',
         'password' => '',
+    ],
+    'cache' => [
+        'type' => 'file',
     ],
     'job' => 'config/job.php',
 ];
@@ -130,15 +141,15 @@ Alight\Route::get('/', ['Controller', 'index']);
 // Or try this to easy trigger hints from IDE
 Alight\Route::get('/', [Controller::class, 'index']);
 // With default args
-Alight\Route::get('/', [Controller::class, 'list'], ['page' => 1]);
+Alight\Route::get('post/list[/{page}]', [Controller::class, 'list'], ['page' => 1]);
 
 // Common HTTP request methods
-Alight\Route::options('test', 'handler');
-Alight\Route::head('test', 'handler');
-Alight\Route::post('test', 'handler');
-Alight\Route::delete('test', 'handler');
-Alight\Route::put('test', 'handler');
-Alight\Route::patch('test', 'handler');
+Alight\Route::options('/', 'handler');
+Alight\Route::head('/', 'handler');
+Alight\Route::post('/', 'handler');
+Alight\Route::delete('/', 'handler');
+Alight\Route::put('/', 'handler');
+Alight\Route::patch('/', 'handler');
 
 // Map for Custom methods
 Alight\Route::map(['GET', 'POST'], 'test', 'handler');
