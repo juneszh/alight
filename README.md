@@ -79,6 +79,7 @@ return [
         'username' => 'root',
         'password' => '',
     ],
+    'job' => 'config/job.php',
 ];
 ```
 
