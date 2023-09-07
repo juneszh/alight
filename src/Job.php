@@ -39,13 +39,11 @@ class Job
     /**
      * Start run with fork process
      * 
-     * @param null|string $execCode 
-     * @param null|string $execJob 
      * @return never 
      * @throws InvalidArgumentException 
      * @throws Exception 
      */
-    public static function start(?string $execCode = null, ?string $execJob = null)
+    public static function start()
     {
         $timezone = Config::get('app', 'timezone');
         if ($timezone) {
@@ -56,17 +54,7 @@ class Job
 
         self::$startTime = time();
 
-        if ($execCode) {
-            eval($execCode);
-            exit;
-        }
-
-        if ($execJob) {
-            $jobs = [$execJob => self::TIME_LIMIT];
-        } else {
-            $jobs = self::getJobs();
-        }
-
+        $jobs = self::getJobs();
         if ($jobs) {
             $lockPath = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/job';
             if (!is_dir($lockPath)) {
@@ -83,7 +71,7 @@ class Job
 
             $childPid = 0;
             $childCount = 0;
-            foreach ($jobs as $_handler => $_timeLimit) {
+            foreach ($jobs as $_handler => list($_args, $_timeLimit)) {
                 $childPid = pcntl_fork();
                 if ($childPid === -1) {
                     $logger->critical('', ['Unable fork', $logData]);
@@ -92,6 +80,7 @@ class Job
                     ++$childCount;
                 } else {
                     // child process
+                    $logData['args'] = $_args;
                     $pid = posix_getpid();
                     $lockFile = $lockPath . '/' . str_replace('\\', '.', $_handler) . '.lock';
                     if (file_exists($lockFile)) {
@@ -119,7 +108,7 @@ class Job
                         $logger->info($_handler, ['Running', $logData]);
 
                         $start = microtime(true);
-                        call_user_func($_handler);
+                        call_user_func_array($_handler, $_args);
                         $logData['runtime'] = number_format((microtime(true) - $start), 3);
                         $logger->info($_handler, ['Finish', $logData]);
                     } else {
@@ -172,7 +161,10 @@ class Job
             foreach (self::$config as $_job) {
                 if (isset($rules[$_job['rule']])) {
                     $handler = is_string($_job['handler']) ? $_job['handler'] : join('::', $_job['handler']);
-                    $jobs[$handler] = $_job['timeLimit'] ?? self::TIME_LIMIT;
+                    $jobs[$handler] = [
+                        $_job['args'],
+                        $_job['timeLimit'] ?? self::TIME_LIMIT
+                    ];
                 }
             }
         }
@@ -220,13 +212,15 @@ class Job
      * Push a handler to scheduler (Default is minutely)
      * 
      * @param callable $handler 
+     * @param array $args
      * @return JobOption 
      */
-    public static function call(callable $handler): JobOption
+    public static function call(callable $handler, array $args = []): JobOption
     {
         ++self::$index;
         self::$config[self::$index] = [
             'handler' => $handler,
+            'args' => $args,
             'rule' => '*'
         ];
 

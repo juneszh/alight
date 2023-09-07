@@ -88,6 +88,16 @@ class Response
         510 => 'Not Extended',
         511 => 'Network Authentication Required',
     ];
+    
+    /**
+     * Common cors headers
+     */
+    public const CORS_HEADERS = [
+        'Content-Type',
+        'Origin',
+        'X-Requested-With',
+        'Authorization',
+    ];
 
     /**
      * Api response template base json/jsonp format
@@ -240,8 +250,8 @@ class Response
                     header('Vary: Origin');
 
                     if (Request::method() === 'OPTIONS') {
-                        $allowHeaders = $allowHeaders ?: (Config::get('app', 'corsHeader') ?: ['Content-Type', 'Origin', 'X-Requested-With', 'Authorization']);
-                        $allowMethods = $allowMethods ?: Request::ALLOW_METHODS;
+                        $allowHeaders = $allowHeaders ?: (Config::get('app', 'corsHeaders') ?: self::CORS_HEADERS);
+                        $allowMethods = $allowMethods ?: (Config::get('app', 'corsMethods') ?: Request::ALLOW_METHODS);
                         header('Access-Control-Allow-Headers: ' . join(', ', $allowHeaders));
                         header('Access-Control-Allow-Methods: ' . join(', ', $allowMethods));
                         header('Access-Control-Max-Age: 86400');

@@ -3,10 +3,10 @@ Alight is a light-weight PHP framework. Easily and quickly build high performanc
 
 ## Alight Family
 
-| Project     | Description     |
-| --- | --- |
-| [Alight](https://github.com/juneszh/alight)  | Basic framework built-in routing, database, caching, etc. |
-| [Alight-Admin](https://github.com/juneszh/alight-admin)  | A full admin panel extension based on Alight. No front-end coding required.|
+| Project                                                     | Description                                                                       |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [Alight](https://github.com/juneszh/alight)                 | Basic framework built-in routing, database, caching, etc.                         |
+| [Alight-Admin](https://github.com/juneszh/alight-admin)     | A full admin panel extension based on Alight. No front-end coding required.       |
 | [Alight-Project](https://github.com/juneszh/alight-project) | A template for beginner to easily create web applications by Alight/Alight-Admin. |
 
 ## Requirements
@@ -128,36 +128,40 @@ Alight\Route::get('/', 'Controller::index');
 Alight\Route::get('/', ['Controller', 'index']);
 // Or try this to easy trigger hints from IDE
 Alight\Route::get('/', [Controller::class, 'index']);
+// With default args
+Alight\Route::get('/', [Controller::class, 'list'], ['page' => 1]);
 
 // Common HTTP request methods
-Alight\Route::head('/test', 'handler');
-Alight\Route::post('/test', 'handler');
-Alight\Route::delete('/test', 'handler');
-Alight\Route::put('/test', 'handler');
-Alight\Route::options('/test', 'handler');
-Alight\Route::trace('/test', 'handler');
-Alight\Route::patch('/test', 'handler');
+Alight\Route::options('test', 'handler');
+Alight\Route::head('test', 'handler');
+Alight\Route::post('test', 'handler');
+Alight\Route::delete('test', 'handler');
+Alight\Route::put('test', 'handler');
+Alight\Route::patch('test', 'handler');
 
 // Map for Custom methods
-Alight\Route::map(['GET', 'POST'], '/test', 'handler');
+Alight\Route::map(['GET', 'POST'], 'test', 'handler');
 
 // Any for all common methods
-Alight\Route::any('/test', 'handler');
+Alight\Route::any('test', 'handler');
 ```
 
 ### Regular Expressions
 ```php
 // Matches /user/42, but not /user/xyz
-Alight\Route::get('/user/{id:\d+}', 'handler');
+Alight\Route::get('user/{id:\d+}', 'handler');
 
 // Matches /user/foobar, but not /user/foo/bar
-Alight\Route::get('/user/{name}', 'handler');
+Alight\Route::get('user/{name}', 'handler');
 
 // Matches /user/foo/bar as well, using wildcards
-Alight\Route::get('/user/{name:.+}', 'handler');
+Alight\Route::get('user/{name:.+}', 'handler');
 
 // The /{name} suffix is optional
-Alight\Route::get('/user[/{name}]', 'handler');
+Alight\Route::get('user[/{name}]', 'handler');
+
+// Root wildcards for single page app
+Alight\Route::get('/{path:.*}', 'handler');
 ```
 **nikic/fast-route** handles all regular expressions in the routing path. See [FastRoute Usage](https://github.com/nikic/FastRoute#defining-routes) for details.
 
@@ -165,23 +169,23 @@ Alight\Route::get('/user[/{name}]', 'handler');
 
 #### Group
 ```php
-Alight\Route::group('/admin');
+Alight\Route::group('admin');
 // Matches /admin/role/list
-Alight\Route::get('/role/list', 'handler');
+Alight\Route::get('role/list', 'handler');
 // Matches /admin/role/info
-Alight\Route::get('/role/info', 'handler');
+Alight\Route::get('role/info', 'handler');
 
 // Override the group
-Alight\Route::group('/api');
+Alight\Route::group('api');
 // Matches /api/news/list
-Alight\Route::get('/news/list', 'handler');
+Alight\Route::get('news/list', 'handler');
 ```
 
 #### Customize 'any'
 You can customize the methods contained in `Alight\Route::any()`.
 ```php
 Alight\Route::setAnyMethods(['GET', 'POST']);
-Alight\Route::any('/only/get/and/post', 'handler');
+Alight\Route::any('only/get/and/post', 'handler');
 ```
 
 #### Before handler
@@ -190,8 +194,8 @@ If you want to run some common code before route's handler.
 // For example log every hit request
 Alight\Route::beforeHandler([svc\Request::class, 'log']);
 
-Alight\Route::get('/test', 'handler');
-Alight\Route::post('/test', 'handler');
+Alight\Route::get('test', 'handler');
+Alight\Route::post('test', 'handler');
 ```
 
 
@@ -208,17 +212,17 @@ All routing options only take effect in the current file and will be auto reset 
 
 File: config/admin.php
 ```php
-Alight\Route::group('/admin');
+Alight\Route::group('admin');
 Alight\Route::setAnyMethods(['GET', 'POST']);
 
 // Matches '/admin/login' by methods 'GET', 'POST'
-Alight\Route::any('/login', 'handler');
+Alight\Route::any('login', 'handler');
 ```
 
 File: config/web.php
 ```php
 // Matches '/login' by methods 'GET', 'POST', 'PUT', 'DELETE', etc
-Alight\Route::any('/login', 'handler');
+Alight\Route::any('login', 'handler');
 ```
 
 ### Utilities
@@ -226,9 +230,9 @@ Alight\Route::any('/login', 'handler');
 Send a Cache-Control header to control caching in browsers and shared caches (CDN) in order to optimize the speed of access to unmodified data.
 ```php
 // Cache one day
-Alight\Route::get('/about/us', 'handler')->cache(86400);
+Alight\Route::get('about/us', 'handler')->cache(86400);
 // Or force disable cache
-Alight\Route::put('/user/info', 'handler')->cache(0);
+Alight\Route::put('user/info', 'handler')->cache(0);
 ```
 
 #### Handling user authorization
@@ -238,16 +242,16 @@ We provide a simple authorization handler to manage user login status.
 Alight\Route::authHandler([\svc\Auth::class, 'verify']);
 
 // Enable verification in routes
-Alight\Route::get('/user/info', 'handler')->auth();
-Alight\Route::get('/user/password', 'handler')->auth();
+Alight\Route::get('user/info', 'handler')->auth();
+Alight\Route::get('user/password', 'handler')->auth();
 
 // No verification by default
-Alight\Route::get('/about/us', 'handler');
+Alight\Route::get('about/us', 'handler');
 
 // In general, routing with authorization will not use browser cache
 // So auth() has built-in cache(0) to force disable cache
 // Please add cache(n) after auth() to override the configuration if you need
-Alight\Route::get('/user/rank/list', 'handler')->auth()->cache(3600);
+Alight\Route::get('user/rank/list', 'handler')->auth()->cache(3600);
 ```
 File: app/service/Auth.php
 ```php
@@ -270,22 +274,28 @@ class Auth
 Many times the data submitted by the user takes time to process, and we don't want to receive the same data before it's processed. So we need to set the request cooldown time. The user will receive a 429 error when requesting again within the cooldown.
 ```php
 // Cooldown only takes effect when authorized
-Alight\Route::put('/user/info', 'handler')->auth()->cd(2);
-Alight\Route::post('/user/status', 'handler')->auth()->cd(2);
+Alight\Route::put('user/info', 'handler')->auth()->cd(2);
+Alight\Route::post('user/status', 'handler')->auth()->cd(2);
 ```
 
 #### Cross-Origin Resource Sharing (CORS)
 When your API needs to be used for Ajax requests by a third-party website (or your project has multiple domains), you need to send a set of CORS headers. For specific reasons, please refer to: [Mozilla docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
 ```php
-// All third-party domains will receive the cors header
-Alight\Route::put('/share/all', 'handler')->cors(); 
+// Domains in config will receive the common cors header
+Alight\Route::put('share/config', 'handler')->cors(); 
 
-// The specified domain will receive the cors header
-Alight\Route::put('/share/partner', 'handler')->cors('abc.com'); 
+// The specified domain will receive the common cors header
+Alight\Route::put('share/specified', 'handler')->cors('abc.com');
+
+// The specified domain will receive the specified cors header
+Alight\Route::put('share/specified2', 'handler')->cors('abc.com', 'Authorization', ['GET', 'POST']);
 
 // All domains will receive a 'Access-Control-Allow-Origin: *' header
-Alight\Route::put('/share/partner', 'handler')->cors('*');
+Alight\Route::put('share/all/http', 'handler')->cors('*'); 
+
+// All domains will receive a 'Access-Control-Allow-Origin: [From Origin]' header
+Alight\Route::put('share/all/https', 'handler')->cors('origin');
 ```
 *If your website is using CDN, please use this utility carefully. To avoid request failure after the header is cached by CDN.*
 
@@ -608,13 +618,13 @@ HTTP 200 OK
 }
 ```
 Status Definition:
-| HTTP Status | API Error | Description    |
-| ---: | ----: | ------ |
-| 200  | 0     | OK |
-| 200  | 1xxx  | General business errors, only display message to user |
-| 200  | 2xxx  | Special business errors, need to define next action for user |
-| 4xx  | 4xx   | Client errors |
-| 5xx  | 5xx   | Server errors |
+| HTTP Status | API Error | Description                                                  |
+| ----------: | --------: | ------------------------------------------------------------ |
+|         200 |         0 | OK                                                           |
+|         200 |      1xxx | General business errors, only display message to user        |
+|         200 |      2xxx | Special business errors, need to define next action for user |
+|         4xx |       4xx | Client errors                                                |
+|         5xx |       5xx | Server errors                                                |
 
 For example:
 ```php
@@ -686,11 +696,11 @@ Hello, Ben!
 ### Others
 There are also some useful helpers placed in different namespaces. Please click the file for details:
 
-| Namespace | File    |
-| --- | --- |
-| Alight\Request  | [Request.php](./src/Request.php) |
-| Alight\Response  | [Response.php](./src/Response.php) |
-| Alight\Utility  | [Utility.php](./src/Utility.php) |
+| Namespace       | File                               |
+| --------------- | ---------------------------------- |
+| Alight\Request  | [Request.php](./src/Request.php)   |
+| Alight\Response | [Response.php](./src/Response.php) |
+| Alight\Utility  | [Utility.php](./src/Utility.php)   |
 
 ## Credits
 * Composer requires

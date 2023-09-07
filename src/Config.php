@@ -26,7 +26,8 @@ class Config
             'storagePath' => 'storage', // The storage path of the files generated at runtime by framework
             'domainLevel' => 2, // Get subdomains for route. For example, set 3 to match 'a' when the domain is like 'a.b.co.jp'
             'corsDomain' => null, // Set a default domain array for CORS, or follow 'origin' header when set 'origin'
-            'corsHeader' => null, // Set a default header array for CORS
+            'corsHeaders' => null, // Set a default header array for CORS
+            'corsMethods' => null, // Set a default header array for CORS
             'cacheAdapter' => null, // Extended cache adapter based on symfony/cache
             'errorHandler' => null, // Override error handler
             'errorPageHandler' => null, // Override error page handler
