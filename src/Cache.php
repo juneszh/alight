@@ -17,11 +17,14 @@ use ErrorException;
 use Exception;
 use Memcached;
 use Redis;
-use Symfony\Component\Cache\Adapter\AbstractAdapter;
+use Symfony\Component\Cache\Adapter\ChainAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
 use Symfony\Component\Cache\Adapter\MemcachedAdapter;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
+use Symfony\Component\Cache\Adapter\RedisTagAwareAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
 
@@ -51,35 +54,34 @@ class Cache
     /**
      * Initializes the instance (psr16 alias)
      * 
-     * @param string $key 
+     * @param string[] $keys 
      * @return Psr16Cache 
      * @throws Exception 
+     * @throws InvalidArgumentException 
      * @throws ErrorException 
-     * @throws InvalidArgumentException 
-     * @throws InvalidArgumentException 
      */
-    public static function init(string $key = ''): Psr16Cache
+    public static function init(string ...$keys): Psr16Cache
     {
-        return self::psr16($key);
+        return self::psr16(...$keys);
     }
 
     /**
      * Initializes the psr16 instance
      * 
-     * @param string $key 
+     * @param string[] $keys 
      * @return Psr16Cache 
      * @throws Exception 
+     * @throws InvalidArgumentException 
      * @throws ErrorException 
-     * @throws InvalidArgumentException 
-     * @throws InvalidArgumentException 
      */
-    public static function psr16(string $key = ''): Psr16Cache
+    public static function psr16(string ...$keys): Psr16Cache
     {
+        $key = join('||', $keys);
+
         if (isset(self::$instance[$key][__FUNCTION__])) {
             $psr16Cache = self::$instance[$key][__FUNCTION__];
         } else {
-            $psr6Cache = self::psr6($key);
-            $psr16Cache = new Psr16Cache($psr6Cache);
+            $psr16Cache = new Psr16Cache(self::psr6(...$keys));
             self::$instance[$key][__FUNCTION__] = $psr16Cache;
         }
 
@@ -89,48 +91,99 @@ class Cache
     /**
      * Initializes the psr6 instance
      * 
-     * @param string $key 
-     * @return AbstractAdapter 
+     * @param string[] $keys 
+     * @return ChainAdapter 
      * @throws Exception 
+     * @throws InvalidArgumentException 
      * @throws ErrorException 
-     * @throws InvalidArgumentException 
-     * @throws InvalidArgumentException 
      */
-    public static function psr6(string $key = ''): AbstractAdapter
+    public static function psr6(string ...$keys): ChainAdapter
     {
+        $key = join('||', $keys);
+
         if (isset(self::$instance[$key][__FUNCTION__])) {
             $psr6Cache = self::$instance[$key][__FUNCTION__];
+        } else {
+            if (count($keys) > 1) {
+                $psr6Cache = new ChainAdapter(array_map(fn ($_key) => self::psr6($_key), $keys));
+            } else {
+                $config = self::getConfig($key);
+                switch ($config['type']) {
+                    case 'file':
+                        $directory = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/cache';
+                        $psr6Cache = new FilesystemAdapter($config['namespace'], $config['defaultLifetime'], $directory);
+                        break;
+                    case 'redis':
+                        $client = self::redis($key);
+                        $psr6Cache = new RedisAdapter($client, $config['namespace'], $config['defaultLifetime']);
+                        break;
+                    case 'memcached':
+                        $client = self::memcached($key);
+                        $psr6Cache = new MemcachedAdapter($client, $config['namespace'], $config['defaultLifetime']);
+                        break;
+                    default:
+                        $customCacheAdapter = Config::get('app', 'cacheAdapter');
+                        if ($customCacheAdapter === null) {
+                            $psr6Cache = new NullAdapter;
+                        } else {
+                            if (!is_callable($customCacheAdapter)) {
+                                throw new Exception('Invalid cacheAdapter specified.');
+                            }
+                            $psr6Cache = call_user_func($customCacheAdapter, $config);
+                        }
+                        break;
+                }
+            }
+
+            self::$instance[$key][__FUNCTION__] = $psr6Cache;
+        }
+
+        return $psr6Cache;
+    }
+
+    /**
+     * Initializes the psr6 instance with tags
+     * 
+     * @param string $key 
+     * @return TagAwareAdapter 
+     * @throws Exception 
+     * @throws InvalidArgumentException 
+     * @throws ErrorException 
+     */
+    public static function psr6tag(string $key = ''): TagAwareAdapter
+    {
+        if (isset(self::$instance[$key][__FUNCTION__])) {
+            $tagCache = self::$instance[$key][__FUNCTION__];
         } else {
             $config = self::getConfig($key);
             switch ($config['type']) {
                 case 'file':
                     $directory = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/cache';
-                    $psr6Cache = new FilesystemAdapter($config['namespace'], $config['defaultLifetime'], $directory);
-                    break;
-                case 'memcached':
-                    $client = self::memcached($key);
-                    $psr6Cache = new MemcachedAdapter($client, $config['namespace'], $config['defaultLifetime']);
+                    $tagCache = new FilesystemTagAwareAdapter($config['namespace'], $config['defaultLifetime'], $directory);
                     break;
                 case 'redis':
                     $client = self::redis($key);
-                    $psr6Cache = new RedisAdapter($client, $config['namespace'], $config['defaultLifetime']);
+                    $tagCache = new RedisTagAwareAdapter($client, $config['namespace'], $config['defaultLifetime']);
+                case 'memcached':
+                    $client = self::memcached($key);
+                    $tagCache = new TagAwareAdapter(new MemcachedAdapter($client, $config['namespace'], $config['defaultLifetime']));
                     break;
                 default:
                     $customCacheAdapter = Config::get('app', 'cacheAdapter');
                     if ($customCacheAdapter === null) {
-                        $psr6Cache = new NullAdapter;
+                        $tagCache = new TagAwareAdapter(new NullAdapter);
                     } else {
                         if (!is_callable($customCacheAdapter)) {
                             throw new Exception('Invalid cacheAdapter specified.');
                         }
-                        $psr6Cache = call_user_func($customCacheAdapter, $config);
+                        $tagCache = new TagAwareAdapter(call_user_func($customCacheAdapter, $config));
                     }
                     break;
             }
-            self::$instance[$key][__FUNCTION__] = $psr6Cache;
+            self::$instance[$key][__FUNCTION__] = $tagCache;
         }
 
-        return $psr6Cache;
+        return $tagCache;
     }
 
     /**
@@ -162,7 +215,6 @@ class Cache
      * @param string $key 
      * @return Redis 
      * @throws Exception 
-     * @throws InvalidArgumentException 
      * @throws InvalidArgumentException 
      */
     public static function redis(string $key = ''): Redis
