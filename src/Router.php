@@ -19,8 +19,10 @@ use FastRoute;
 use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
 use LogicException;
+use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
+use Symfony\Component\Cache\Exception\LogicException as ExceptionLogicException;
 
 class Router
 {
@@ -45,7 +47,9 @@ class Router
      * @throws LogicException 
      * @throws RuntimeException 
      * @throws InvalidArgumentException 
-     * @throws InvalidArgumentException 
+     * @throws ErrorException 
+     * @throws CacheInvalidArgumentException 
+     * @throws ExceptionLogicException 
      */
     public static function start()
     {
@@ -219,26 +223,32 @@ class Router
         return $result;
     }
 
+
     /**
      * Limit request interval
      * 
      * @param string $pattern 
      * @param int $cd 
      * @throws Exception 
+     * @throws InvalidArgumentException 
      * @throws ErrorException 
-     * @throws InvalidArgumentException 
-     * @throws InvalidArgumentException 
+     * @throws CacheInvalidArgumentException 
+     * @throws ExceptionLogicException 
      */
     private static function coolDown(string $pattern, int $cd)
     {
         if (self::$authId) {
-            $cache = Cache::init();
-            $cacheKey = 'route_cd_' . md5(Request::method() . ' ' . $pattern) . '_' . self::$authId;
-            if ($cache->has($cacheKey)) {
+            $cache = Cache::psr6tag();
+            $cacheKey = 'alight.route_cd_' . md5(Request::method() . ' ' . $pattern) . '_' . self::$authId;
+            if ($cache->hasItem($cacheKey)) {
                 Response::api(429);
                 exit;
             } else {
-                $cache->set($cacheKey, 1, $cd);
+                $cacheItem = $cache->getItem($cacheKey);
+                $cacheItem->set(1);
+                $cacheItem->expiresAfter($cd);
+                $cacheItem->tag('alight.route_cd');
+                $cache->save($cacheItem);
             }
         }
     }
