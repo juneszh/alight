@@ -238,17 +238,17 @@ class Router
     private static function coolDown(string $pattern, int $cd)
     {
         if (self::$authId) {
-            $cache = Cache::psr6tag();
-            $cacheKey = 'alight.route_cd_' . md5(Request::method() . ' ' . $pattern) . '_' . self::$authId;
-            if ($cache->hasItem($cacheKey)) {
+            $cache6 = Cache::psr6();
+            $cacheKey = 'alight.route_cd.' . md5(Request::method() . ' ' . $pattern) . '.' . self::$authId;
+            $cacheItem = $cache6->getItem($cacheKey);
+            if ($cacheItem->isHit()) {
                 Response::api(429);
                 exit;
             } else {
-                $cacheItem = $cache->getItem($cacheKey);
                 $cacheItem->set(1);
                 $cacheItem->expiresAfter($cd);
                 $cacheItem->tag('alight.route_cd');
-                $cache->save($cacheItem);
+                $cache6->save($cacheItem);
             }
         }
     }
