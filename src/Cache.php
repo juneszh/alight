@@ -58,7 +58,7 @@ class Cache
      * @throws InvalidArgumentException 
      * @throws ErrorException 
      */
-    public static function init(string $configKey): Psr16Cache
+    public static function init(string $configKey = ''): Psr16Cache
     {
         return self::psr16($configKey);
     }
@@ -72,7 +72,7 @@ class Cache
      * @throws InvalidArgumentException 
      * @throws ErrorException 
      */
-    public static function psr16(string $configKey): Psr16Cache
+    public static function psr16(string $configKey = ''): Psr16Cache
     {
         if (isset(self::$instance[$configKey][__FUNCTION__])) {
             $psr16Cache = self::$instance[$configKey][__FUNCTION__];
@@ -202,5 +202,29 @@ class Cache
         }
 
         return array_replace_recursive(self::DEFAULT_CONFIG, $configCache);
+    }
+
+    /**
+     * Pruning expired cache items
+     * 
+     * @param array $types 
+     * @throws Exception 
+     * @throws InvalidArgumentException 
+     * @throws ErrorException 
+     * @see https://symfony.com/doc/current/components/cache/cache_pools.html#component-cache-cache-pool-prune
+     */
+    public static function prune(array $types = ['file'])
+    {
+        $config = Config::get('cache');
+        if ($config && is_array($config)) {
+            if (isset($config['type'])) {
+                $config = ['' => $config];
+            }
+            foreach ($config as $_key => $_config) {
+                if (in_array($_config['type'] ?? '', $types)) {
+                    self::psr6($_key)->prune();
+                }
+            }
+        }
     }
 }
