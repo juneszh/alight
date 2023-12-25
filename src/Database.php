@@ -36,14 +36,14 @@ class Database
     /**
      * Initializes the instance
      * 
-     * @param string $key 
+     * @param string $configKey 
      * @return Medoo 
      * @throws Exception 
      */
-    public static function init(string $key = ''): Medoo
+    public static function init(string $configKey = ''): Medoo
     {
-        if (!isset(self::$instance[$key])) {
-            $config = self::getConfig($key);
+        if (!isset(self::$instance[$configKey])) {
+            $config = self::getConfig($configKey);
 
             if (!isset($config['error'])) {
                 $config['error'] = PDO::ERRMODE_EXCEPTION;
@@ -54,20 +54,20 @@ class Database
                 $config['option'][PDO::ATTR_STRINGIFY_FETCHES] = false;
             }
 
-            self::$instance[$key] = new Medoo($config);
+            self::$instance[$configKey] = new Medoo($config);
         }
 
-        return self::$instance[$key];
+        return self::$instance[$configKey];
     }
 
     /**
      * Get config values
      * 
-     * @param string $key 
+     * @param string $configKey 
      * @return array 
      * @throws Exception 
      */
-    private static function getConfig(string $key): array
+    private static function getConfig(string $configKey): array
     {
         $config = Config::get('database');
         if (!$config || !is_array($config)) {
@@ -77,17 +77,17 @@ class Database
         if (isset($config['type']) && !is_array($config['type'])) {
             $configDatabase = $config;
         } else {
-            if ($key) {
-                if (!isset($config[$key]) || !is_array($config[$key])) {
-                    throw new Exception('Missing database configuration about \'' . $key . '\'.');
+            if ($configKey) {
+                if (!isset($config[$configKey]) || !is_array($config[$configKey])) {
+                    throw new Exception('Missing database configuration about \'' . $configKey . '\'.');
                 }
             } else {
-                $key = key($config);
-                if (!is_array($config[$key])) {
+                $configKey = key($config);
+                if (!is_array($config[$configKey])) {
                     throw new Exception('Missing database configuration.');
                 }
             }
-            $configDatabase = $config[$key];
+            $configDatabase = $config[$configKey];
         }
 
         return $configDatabase;
