@@ -23,8 +23,8 @@ use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Adapter\RedisTagAwareAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
-use Symfony\Component\Cache\Psr16Cache;
 use Symfony\Component\Cache\Exception\InvalidArgumentException;
+use Symfony\Component\Cache\Psr16Cache;
 
 class Cache
 {
@@ -52,35 +52,33 @@ class Cache
     /**
      * Initializes the instance (psr16 alias)
      * 
-     * @param string[] $keys 
+     * @param string $configKey 
      * @return Psr16Cache 
      * @throws Exception 
      * @throws InvalidArgumentException 
      * @throws ErrorException 
      */
-    public static function init(string ...$keys): Psr16Cache
+    public static function init(string $configKey): Psr16Cache
     {
-        return self::psr16(...$keys);
+        return self::psr16($configKey);
     }
 
     /**
      * Initializes the psr16 instance
      * 
-     * @param string[] $keys 
+     * @param string $configKey 
      * @return Psr16Cache 
      * @throws Exception 
      * @throws InvalidArgumentException 
      * @throws ErrorException 
      */
-    public static function psr16(string ...$keys): Psr16Cache
+    public static function psr16(string $configKey): Psr16Cache
     {
-        $key = join('||', $keys);
-
-        if (isset(self::$instance[$key][__FUNCTION__])) {
-            $psr16Cache = self::$instance[$key][__FUNCTION__];
+        if (isset(self::$instance[$configKey][__FUNCTION__])) {
+            $psr16Cache = self::$instance[$configKey][__FUNCTION__];
         } else {
-            $psr16Cache = new Psr16Cache(self::psr6(...$keys));
-            self::$instance[$key][__FUNCTION__] = $psr16Cache;
+            $psr16Cache = new Psr16Cache(self::psr6($configKey));
+            self::$instance[$configKey][__FUNCTION__] = $psr16Cache;
         }
 
         return $psr16Cache;
@@ -89,63 +87,63 @@ class Cache
     /**
      * Initializes the psr6 instance with tags
      * 
-     * @param string $key 
+     * @param string $configKey 
      * @return TagAwareAdapter 
      * @throws Exception 
      * @throws InvalidArgumentException 
      * @throws ErrorException 
      */
-    public static function psr6(string $key = '')
+    public static function psr6(string $configKey = '')
     {
-        if (isset(self::$instance[$key][__FUNCTION__])) {
-            $tagCache = self::$instance[$key][__FUNCTION__];
+        if (isset(self::$instance[$configKey][__FUNCTION__])) {
+            $psr6Cache = self::$instance[$configKey][__FUNCTION__];
         } else {
-            $config = self::getConfig($key);
+            $config = self::getConfig($configKey);
             if ($config['type']) {
                 if ($config['type'] === 'file') {
                     $directory = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/cache';
-                    $tagCache = new FilesystemTagAwareAdapter($config['namespace'], $config['defaultLifetime'], $directory);
+                    $psr6Cache = new FilesystemTagAwareAdapter($config['namespace'], $config['defaultLifetime'], $directory);
                 } elseif ($config['type'] === 'redis') {
-                    $client = self::redis($key);
-                    $tagCache = new RedisTagAwareAdapter($client, $config['namespace'], $config['defaultLifetime']);
+                    $client = self::redis($configKey);
+                    $psr6Cache = new RedisTagAwareAdapter($client, $config['namespace'], $config['defaultLifetime']);
                 } elseif ($config['type'] === 'memcached') {
-                    $client = self::memcached($key);
-                    $tagCache = new TagAwareAdapter(new MemcachedAdapter($client, $config['namespace'], $config['defaultLifetime']));
+                    $client = self::memcached($configKey);
+                    $psr6Cache = new TagAwareAdapter(new MemcachedAdapter($client, $config['namespace'], $config['defaultLifetime']));
                 } else {
                     $customCacheAdapter = Config::get('app', 'cacheAdapter');
                     if (!is_callable($customCacheAdapter)) {
                         throw new Exception('Invalid cacheAdapter specified.');
                     }
-                    $tagCache = new TagAwareAdapter(call_user_func($customCacheAdapter, $config));
+                    $psr6Cache = new TagAwareAdapter(call_user_func($customCacheAdapter, $config));
                 }
             } else {
-                $tagCache = new TagAwareAdapter(new NullAdapter);
+                $psr6Cache = new TagAwareAdapter(new NullAdapter);
             }
-            self::$instance[$key][__FUNCTION__] = $tagCache;
+            self::$instance[$configKey][__FUNCTION__] = $psr6Cache;
         }
 
-        return $tagCache;
+        return $psr6Cache;
     }
 
     /**
      * Initializes the memcached client
      * 
-     * @param string $key 
+     * @param string $configKey 
      * @return Memcached 
      * @throws Exception 
      * @throws ErrorException 
      */
-    public static function memcached(string $key = ''): Memcached
+    public static function memcached(string $configKey = ''): Memcached
     {
-        if (isset(self::$instance[$key]['client'])) {
-            $client = self::$instance[$key]['client'];
+        if (isset(self::$instance[$configKey]['client'])) {
+            $client = self::$instance[$configKey]['client'];
         } else {
-            $config = self::getConfig($key);
+            $config = self::getConfig($configKey);
             if ($config['type'] !== 'memcached') {
-                throw new Exception('Incorrect type in cache configuration \'' . $key . '\'.');
+                throw new Exception('Incorrect type in cache configuration \'' . $configKey . '\'.');
             }
             $client = MemcachedAdapter::createConnection($config['dsn'], $config['options']);
-            self::$instance[$key]['client'] = $client;
+            self::$instance[$configKey]['client'] = $client;
         }
         return $client;
     }
@@ -153,22 +151,22 @@ class Cache
     /**
      * Initializes the redis client
      * 
-     * @param string $key 
+     * @param string $configKey 
      * @return Redis 
      * @throws Exception 
      * @throws InvalidArgumentException 
      */
-    public static function redis(string $key = ''): Redis
+    public static function redis(string $configKey = ''): Redis
     {
-        if (isset(self::$instance[$key]['client'])) {
-            $client = self::$instance[$key]['client'];
+        if (isset(self::$instance[$configKey]['client'])) {
+            $client = self::$instance[$configKey]['client'];
         } else {
-            $config = self::getConfig($key);
+            $config = self::getConfig($configKey);
             if ($config['type'] !== 'redis') {
-                throw new Exception('Incorrect type in cache configuration \'' . $key . '\'.');
+                throw new Exception('Incorrect type in cache configuration \'' . $configKey . '\'.');
             }
             $client = RedisAdapter::createConnection($config['dsn'], $config['options']);
-            self::$instance[$key]['client'] = $client;
+            self::$instance[$configKey]['client'] = $client;
         }
         return $client;
     }
@@ -176,11 +174,11 @@ class Cache
     /**
      * Get config values
      * 
-     * @param string $key 
+     * @param string $configKey 
      * @return array 
      * @throws Exception 
      */
-    private static function getConfig(string $key): array
+    private static function getConfig(string $configKey): array
     {
         $config = Config::get('cache');
         if (!$config || !is_array($config)) {
@@ -190,17 +188,17 @@ class Cache
         if (isset($config['type']) && !is_array($config['type'])) {
             $configCache = $config;
         } else {
-            if ($key) {
-                if (!isset($config[$key]) || !is_array($config[$key])) {
-                    throw new Exception('Missing cache configuration about \'' . $key . '\'.');
+            if ($configKey) {
+                if (!isset($config[$configKey]) || !is_array($config[$configKey])) {
+                    throw new Exception('Missing cache configuration about \'' . $configKey . '\'.');
                 }
             } else {
-                $key = key($config);
-                if (!is_array($config[$key])) {
+                $configKey = key($config);
+                if (!is_array($config[$configKey])) {
                     throw new Exception('Missing cache configuration.');
                 }
             }
-            $configCache = $config[$key];
+            $configCache = $config[$configKey];
         }
 
         return array_replace_recursive(self::DEFAULT_CONFIG, $configCache);
