@@ -116,17 +116,29 @@ class Config
     /**
      * Get config values
      * 
-     * @param null|string $class 
-     * @param null|string $option 
+     * @param string[] $keys 
      * @return mixed 
      * @throws Exception 
      */
-    public static function get(?string $class = null, ?string $option = null)
+    public static function get(string ...$keys)
     {
         if (!self::$config) {
             self::$config = self::init();
         }
-        return $class ? ($option ? (self::$config[$class][$option] ?? null) : (self::$config[$class] ?? null)) : self::$config;
+
+        $value = self::$config;
+        if ($keys) {
+            foreach ($keys as $key) {
+                if (isset($value[$key])) {
+                    $value = $value[$key];
+                } else {
+                    $value = null;
+                    break;
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**

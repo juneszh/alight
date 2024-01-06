@@ -94,6 +94,14 @@ return [
 ];
 ```
 
+### Get some items in the config
+```php
+<?php
+
+Alight\Config::get('app');
+Alight\Config::get('app', 'storagePath');
+```
+
 ### Available Configuration
 See [Config.php](./src/Config.php) for details.
 
@@ -417,21 +425,25 @@ $cache->delete('test');
 
 ### PSR-6 Interface
 ```php
-$cache = \Alight\Cache::psr6('memcached');
-$cacheItem = $cache->getItem('test');
+$cache6 = \Alight\Cache::psr6('memcached');
+$cacheItem = $cache6->getItem('test');
 if (!$cacheItem->isHit()){
     $cacheItem->expiresAfter(3600);
     $cacheItem->set('hello world!');
+    // Bind to a tag
+    $cacheItem->tag('alight');
 }
 $cacheData = $cacheItem->get();
-$cache->deleteItem('test');
+$cache6->deleteItem('test');
+// Delete all cached items in the same tag
+$cache6->invalidateTags('alight')
 
 // Or symfony/cache adapter style
-$cacheData = $cache->get('test', function ($item){
+$cacheData = $cache6->get('test', function ($item){
     $item->expiresAfter(3600);
     return 'hello world!';
 });
-$cache->delete('test');
+$cache6->delete('test');
 ```
 
 ### Native Interface
