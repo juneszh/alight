@@ -72,7 +72,7 @@ class Router
             }
         } else {
             $routeData = $routeResult[1];
-            $routeArgs = $routeData['args'] ? array_merge($routeData['args'], $routeResult[2]) : $routeResult[2];
+            $routeArgs = $routeData['args'] ? $routeResult[2] + $routeData['args'] : $routeResult[2];
 
             Response::cors('default');
 
