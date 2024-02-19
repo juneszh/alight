@@ -26,7 +26,7 @@ class Request
      * @param mixed $set 
      * @return mixed 
      */
-    private static function getter(array $property, string $key, $default, $set = null)
+    private static function getter(array &$property, string $key, $default, $set = null)
     {
         if ($key) {
             if ($set !== null) {
