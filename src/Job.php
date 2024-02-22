@@ -71,7 +71,7 @@ class Job
 
             $childPid = 0;
             $childCount = 0;
-            foreach ($jobs as $_handler => list($_args, $_timeLimit)) {
+            foreach ($jobs as $_key => list($_handler, $_args, $_timeLimit)) {
                 $childPid = pcntl_fork();
                 if ($childPid === -1) {
                     $logger->critical('', ['Unable fork', $logData]);
@@ -82,7 +82,7 @@ class Job
                     // child process
                     $logData['args'] = $_args;
                     $pid = posix_getpid();
-                    $lockFile = $lockPath . '/' . str_replace('\\', '.', $_handler) . '.lock';
+                    $lockFile = $lockPath . '/' . str_replace('\\', '.', $_key) . '.lock';
                     if (file_exists($lockFile)) {
                         $lastProcess = @file_get_contents($lockFile);
                         if ($lastProcess) {
@@ -154,11 +154,19 @@ class Job
             $rules = self::getRules();
             foreach (self::$config as $_job) {
                 if (isset($rules[$_job['rule']])) {
-                    $handler = is_string($_job['handler']) ? $_job['handler'] : join('::', $_job['handler']);
-                    $jobs[$handler] = [
-                        $_job['args'],
-                        $_job['timeLimit'] ?? self::TIME_LIMIT
-                    ];
+                    $_handler = is_string($_job['handler']) ? $_job['handler'] : join('::', $_job['handler']);
+                    $_key = $_handler . ($_job['args'] ? '.' . md5(json_encode($_job['args'])) : '');
+                    $_timeLimit = $_job['timeLimit'] ?? self::TIME_LIMIT;
+
+                    if (!isset($jobs[$_key])) {
+                        $jobs[$_key] = [
+                            $_handler,
+                            $_job['args'],
+                            $_timeLimit
+                        ];
+                    } elseif ($jobs[$_key]['timeLimit'] > $_timeLimit) {
+                        $jobs[$_key]['timeLimit'] = $_timeLimit;
+                    }
                 }
             }
         }
