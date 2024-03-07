@@ -213,7 +213,7 @@ class Job
     /**
      * Push a handler to scheduler (Default is minutely)
      * 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return JobOption 
      */

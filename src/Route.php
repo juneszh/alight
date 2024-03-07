@@ -55,7 +55,7 @@ class Route
      * 
      * @param array $methods 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args 
      * @return RouteUtility 
      */
@@ -88,7 +88,7 @@ class Route
      * Add 'OPTIONS' method route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -101,7 +101,7 @@ class Route
      * Add 'HEAD' method route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -114,7 +114,7 @@ class Route
      * Add 'GET' method route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -127,7 +127,7 @@ class Route
      * Add 'POST' method route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -140,7 +140,7 @@ class Route
      * Add 'DELETE' method route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -153,7 +153,7 @@ class Route
      * Add 'PUT' method route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -166,7 +166,7 @@ class Route
      * Add 'PATCH' method route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -180,7 +180,7 @@ class Route
      * 
      * @param array $methods 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args
      * @return RouteUtility 
      */
@@ -193,7 +193,7 @@ class Route
      * Add all methods route
      * 
      * @param string $pattern 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @return RouteUtility 
      */
     public static function any(string $pattern, $handler, array $args = []): RouteUtility
@@ -224,7 +224,7 @@ class Route
     /**
      * Call a handler before route handler be called
      * 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args 
      */
     public static function beforeHandler($handler, array $args = [])
@@ -235,7 +235,7 @@ class Route
     /**
      * Set the global authorization handler
      * 
-     * @param mixed $handler 
+     * @param callable $handler 
      * @param array $args 
      */
     public static function authHandler($handler, array $args = [])
