@@ -213,11 +213,11 @@ class Job
     /**
      * Push a handler to scheduler (Default is minutely)
      * 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return JobOption 
      */
-    public static function call(callable $handler, array $args = []): JobOption
+    public static function call($handler, array $args = []): JobOption
     {
         ++self::$index;
         self::$config[self::$index] = [

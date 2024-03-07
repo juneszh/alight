@@ -55,11 +55,11 @@ class Route
      * 
      * @param array $methods 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args 
      * @return RouteUtility 
      */
-    private static function addRoute(array $methods, string $pattern, callable $handler, array $args): RouteUtility
+    private static function addRoute(array $methods, string $pattern, $handler, array $args): RouteUtility
     {
         ++self::$index;
         $pattern = (self::$group ? '/' . self::$group : '') . '/' . trim($pattern, '/');
@@ -88,11 +88,11 @@ class Route
      * Add 'OPTIONS' method route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function options(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function options(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(['OPTIONS'], $pattern, $handler, $args);
     }
@@ -101,11 +101,11 @@ class Route
      * Add 'HEAD' method route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function head(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function head(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(['HEAD'], $pattern, $handler, $args);
     }
@@ -114,11 +114,11 @@ class Route
      * Add 'GET' method route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function get(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function get(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(['GET'], $pattern, $handler, $args);
     }
@@ -127,11 +127,11 @@ class Route
      * Add 'POST' method route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function post(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function post(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(['POST'], $pattern, $handler, $args);
     }
@@ -140,11 +140,11 @@ class Route
      * Add 'DELETE' method route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function delete(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function delete(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(['DELETE'], $pattern, $handler, $args);
     }
@@ -153,11 +153,11 @@ class Route
      * Add 'PUT' method route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function put(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function put(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(['PUT'], $pattern, $handler, $args);
     }
@@ -166,11 +166,11 @@ class Route
      * Add 'PATCH' method route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function patch(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function patch(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(['PATCH'], $pattern, $handler, $args);
     }
@@ -180,11 +180,11 @@ class Route
      * 
      * @param array $methods 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args
      * @return RouteUtility 
      */
-    public static function map(array $methods, string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function map(array $methods, string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute($methods, $pattern, $handler, $args);
     }
@@ -193,10 +193,10 @@ class Route
      * Add all methods route
      * 
      * @param string $pattern 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @return RouteUtility 
      */
-    public static function any(string $pattern, callable $handler, array $args = []): RouteUtility
+    public static function any(string $pattern, $handler, array $args = []): RouteUtility
     {
         return self::addRoute(self::$anyMethods ?: Request::ALLOW_METHODS, $pattern, $handler, $args);
     }
@@ -224,10 +224,10 @@ class Route
     /**
      * Call a handler before route handler be called
      * 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args 
      */
-    public static function beforeHandler(callable $handler, array $args = [])
+    public static function beforeHandler($handler, array $args = [])
     {
         self::$beforeHandler = [$handler, $args];
     }
@@ -235,10 +235,10 @@ class Route
     /**
      * Set the global authorization handler
      * 
-     * @param callable $handler 
+     * @param mixed $handler 
      * @param array $args 
      */
-    public static function authHandler(callable $handler, array $args = [])
+    public static function authHandler($handler, array $args = [])
     {
         self::$authHandler = [$handler, $args];
     }
