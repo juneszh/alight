@@ -88,7 +88,7 @@ class Response
         510 => 'Not Extended',
         511 => 'Network Authentication Required',
     ];
-    
+
     /**
      * Common cors headers
      */
@@ -188,20 +188,21 @@ class Response
      * Send a set of Cache-Control headers
      * 
      * @param int $maxAge 
+     * @param array $options 
      */
-    public static function cache(int $maxAge)
+    public static function cache(int $maxAge, array $options = [])
     {
         if ($maxAge) {
-            header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $maxAge) . ' GMT');
-            header('Cache-Control: max-age=' . $maxAge);
+            $cacheControl = ['max-age=' . $maxAge];
             header_remove('Pragma');
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
         } else {
-            header('Expires: Sat, 03 Jun 1989 14:00:00 GMT');
-            header('Cache-Control: no-cache, no-store, must-revalidate');
+            $cacheControl = ['no-cache'];
             header('Pragma: no-cache');
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
         }
+        if ($options) {
+            $cacheControl = array_unique(array_merge($cacheControl, $options));
+        }
+        header('Cache-Control: ' . join(', ', $cacheControl));
     }
 
     /**
@@ -262,5 +263,23 @@ class Response
         }
 
         return $cors;
+    }
+
+    /**
+     * Send a ETag header
+     * @param string $etag 
+     */
+    public static function eTag(string $etag = '')
+    {
+        header('ETag: ' . ($etag ?: Utility::randomHex()));
+    }
+
+    /**
+     * Send a Last-Modified header
+     * @param null|int $timestamp 
+     */
+    public static function lastModified(?int $timestamp = null)
+    {
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $timestamp) . ' GMT');
     }
 }

@@ -74,10 +74,12 @@ class Router
             $routeData = $routeResult[1];
             $routeArgs = $routeData['args'] ? $routeResult[2] + $routeData['args'] : $routeResult[2];
 
+            Response::eTag();
+            Response::lastModified();
             Response::cors('default');
 
             if (isset($routeData['cache'])) {
-                Response::cache($routeData['cache']);
+                Response::cache($routeData['cache'], $routeData['cacheOptions'] ?? []);
             }
 
             if (isset($routeData['beforeHandler'])) {
