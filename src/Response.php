@@ -280,6 +280,6 @@ class Response
      */
     public static function lastModified(?int $timestamp = null)
     {
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $timestamp) . ' GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $timestamp === null  ? time() : $timestamp) . ' GMT');
     }
 }
