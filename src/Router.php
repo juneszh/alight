@@ -79,7 +79,7 @@ class Router
             Response::cors('default');
 
             if (isset($routeData['cache'])) {
-                Response::cache($routeData['cache'], $routeData['cacheOptions'] ?? []);
+                Response::cache($routeData['cache'], $routeData['cacheS'] ?? null, $routeData['cacheOptions'] ?? []);
             }
 
             if (isset($routeData['beforeHandler'])) {

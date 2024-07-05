@@ -27,12 +27,14 @@ class RouteUtility
      * Send a Cache-Control header
      * 
      * @param int $maxAge
+     * @param ?int $sMaxAge
      * @param array $options 
      * @return RouteUtility 
      */
-    public function cache(int $maxAge, array $options = [])
+    public function cache(int $maxAge, ?int $sMaxAge = null, array $options = [])
     {
         Route::$config[$this->index][__FUNCTION__] = $maxAge;
+        Route::$config[$this->index][__FUNCTION__ . 'S'] = $sMaxAge;
         Route::$config[$this->index][__FUNCTION__ . 'Options'] = $options;
         return $this;
     }

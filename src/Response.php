@@ -188,16 +188,21 @@ class Response
      * Send a set of Cache-Control headers
      * 
      * @param int $maxAge 
+     * @param ?int $sMaxAge 
      * @param array $options 
+     * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      */
-    public static function cache(int $maxAge, array $options = [])
+    public static function cache(int $maxAge, ?int $sMaxAge = null, array $options = [])
     {
-        if ($maxAge) {
-            $cacheControl = ['max-age=' . $maxAge];
-            header_remove('Pragma');
-        } else {
+        if (!$maxAge && !$sMaxAge) {
             $cacheControl = ['no-cache'];
             header('Pragma: no-cache');
+        } else {
+            $cacheControl = ['max-age=' . $maxAge];
+            if ($sMaxAge !== null) {
+                $cacheControl[] = 's-maxage=' . $sMaxAge;
+            }
+            header_remove('Pragma');
         }
         if ($options) {
             $cacheControl = array_unique(array_merge($cacheControl, $options));
