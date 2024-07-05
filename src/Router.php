@@ -99,7 +99,11 @@ class Router
                     throw new Exception('Missing authHandler definition.');
                 }
 
-                if ($routeData['cd'] ?? 0) {
+                if (!isset($routeData['cache'])) {
+                    Response::cache(0);
+                }
+
+                if (isset($routeData['cd'])) {
                     self::coolDown($routeData['pattern'], $routeData['cd']);
                 }
             }

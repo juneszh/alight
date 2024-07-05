@@ -47,7 +47,6 @@ class RouteUtility
     public function auth()
     {
         Route::$config[$this->index][__FUNCTION__] = true;
-        $this->cache(0);
         return $this;
     }
 

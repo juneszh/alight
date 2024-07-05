@@ -191,6 +191,7 @@ class Response
      * @param ?int $sMaxAge 
      * @param array $options 
      * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+     * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
      */
     public static function cache(int $maxAge, ?int $sMaxAge = null, array $options = [])
     {
@@ -199,8 +200,14 @@ class Response
             header('Pragma: no-cache');
         } else {
             $cacheControl = ['max-age=' . $maxAge];
+            if ($maxAge === 0) {
+                $cacheControl[] = 'must-revalidate';
+            }
             if ($sMaxAge !== null) {
                 $cacheControl[] = 's-maxage=' . $sMaxAge;
+                if ($sMaxAge === 0) {
+                    $cacheControl[] = 'proxy-revalidate';
+                }
             }
             header_remove('Pragma');
         }
