@@ -90,6 +90,10 @@ class Router
             }
 
             if (isset($routeData['auth'])) {
+                if (!isset($routeData['cache'])) {
+                    Response::cache(0);
+                }
+
                 if ($routeData['authHandler'] ?? []) {
                     if (!is_callable($routeData['authHandler'][0])) {
                         throw new Exception('Invalid authHandler specified.');
@@ -97,10 +101,6 @@ class Router
                     self::$authId = call_user_func_array($routeData['authHandler'][0], $routeData['authHandler'][1]);
                 } else {
                     throw new Exception('Missing authHandler definition.');
-                }
-
-                if (!isset($routeData['cache'])) {
-                    Response::cache(0);
                 }
 
                 if (isset($routeData['cd'])) {
