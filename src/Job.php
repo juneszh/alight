@@ -23,17 +23,11 @@ class Job
     public static int $startTime;
     private const TIME_LIMIT = 3600;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    private function __destruct()
-    {
-    }
+    private function __destruct() {}
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
 
     /**
@@ -72,6 +66,28 @@ class Job
             $childPid = 0;
             $childCount = 0;
             foreach ($jobs as $_key => list($_handler, $_args, $_timeLimit)) {
+                $lockFile = $lockPath . '/' . str_replace('\\', '.', $_key) . '.lock';
+                if (file_exists($lockFile)) {
+                    $lastProcess = @file_get_contents($lockFile);
+                    if ($lastProcess) {
+                        list($lastPid, $lastTime, $lastLimit) = explode('|', $lastProcess);
+                        if (posix_kill((int)$lastPid, 0)) {
+                            $logData['lastTime'] = date('Y-m-d H:i:s', (int)$lastTime);
+                            $logData['timeLimit'] = $lastLimit;
+                            if ($lastLimit <= 0) {
+                                continue;
+                            } elseif (self::$startTime - $lastLimit <= $lastTime) {
+                                $logger->warning($_handler, ['Last running', $logData]);
+                                continue;
+                            } else {
+                                $logger->warning($_handler, ['Kill last', $logData]);
+                                posix_kill((int)$lastPid, SIGKILL);
+                                sleep(1);
+                            }
+                        }
+                    }
+                }
+
                 $childPid = pcntl_fork();
                 if ($childPid === -1) {
                     $logger->critical('', ['Unable fork', $logData]);
@@ -82,26 +98,6 @@ class Job
                     // child process
                     $logData['args'] = $_args;
                     $pid = posix_getpid();
-                    $lockFile = $lockPath . '/' . str_replace('\\', '.', $_key) . '.lock';
-                    if (file_exists($lockFile)) {
-                        $lastProcess = @file_get_contents($lockFile);
-                        if ($lastProcess) {
-                            list($lastPid, $lastTime, $lastLimit) = explode('|', $lastProcess);
-                            if (posix_kill((int)$lastPid, 0)) {
-                                $logData['lastTime'] = date('Y-m-d H:i:s', (int)$lastTime);
-                                $logData['timeLimit'] = $lastLimit;
-                                if (self::$startTime - $lastLimit <= $lastTime) {
-                                    $logger->warning($_handler, ['Last running', $logData]);
-                                    posix_kill($pid, SIGKILL);
-                                    exit;
-                                } else {
-                                    $logger->warning($_handler, ['Kill last', $logData]);
-                                    posix_kill((int)$lastPid, SIGKILL);
-                                    sleep(1);
-                                }
-                            }
-                        }
-                    }
 
                     file_put_contents($lockFile, $pid . '|' . self::$startTime . '|' . $_timeLimit, LOCK_EX);
                     if (is_callable($_handler)) {

@@ -150,7 +150,7 @@ class JobOption
     /**
      * Set the maximum number of seconds to execute the job (Does not force quit until next same job starts)
      * 
-     * @param int $seconds 
+     * @param int $seconds The default is 3600, 0 for run persistently
      * @return JobOption 
      */
     public function timeLimit(int $seconds): JobOption
