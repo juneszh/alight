@@ -58,11 +58,8 @@ class Job
             }
 
             $logger = Log::init('job/scheduler');
-            $logData = [
-                'startTime' => date('Y-m-d H:i:s', self::$startTime),
-            ];
-            $logger->info('', ['Start', $logData]);
 
+            $start = microtime(true);
             $childPid = 0;
             $childCount = 0;
             foreach ($jobs as $_key => list($_handler, $_args, $_timeLimit)) {
@@ -72,15 +69,13 @@ class Job
                     if ($lastProcess) {
                         list($lastPid, $lastTime, $lastLimit) = explode('|', $lastProcess);
                         if (posix_kill((int)$lastPid, 0)) {
-                            $logData['lastTime'] = date('Y-m-d H:i:s', (int)$lastTime);
-                            $logData['timeLimit'] = $lastLimit;
                             if ($lastLimit <= 0) {
                                 continue;
                             } elseif (self::$startTime - $lastLimit <= $lastTime) {
-                                $logger->warning($_handler, ['Last running', $logData]);
+                                $logger->warning($_handler, ['Last running', ['lastTime' => date('Y-m-d H:i:s', (int)$lastTime), 'timeLimit' => $lastLimit]]);
                                 continue;
                             } else {
-                                $logger->warning($_handler, ['Kill last', $logData]);
+                                $logger->warning($_handler, ['Kill last', ['lastTime' => date('Y-m-d H:i:s', (int)$lastTime), 'timeLimit' => $lastLimit]]);
                                 posix_kill((int)$lastPid, SIGKILL);
                                 sleep(1);
                             }
@@ -90,25 +85,26 @@ class Job
 
                 $childPid = pcntl_fork();
                 if ($childPid === -1) {
-                    $logger->critical('', ['Unable fork', $logData]);
+                    $logger->critical('', ['Unable fork']);
                 } else if ($childPid) {
                     // main process
+                    if ($childCount === 0) {
+                        $logger->info('', ['Start']);
+                    }
                     ++$childCount;
                 } else {
                     // child process
-                    $logData['args'] = $_args;
                     $pid = posix_getpid();
 
                     file_put_contents($lockFile, $pid . '|' . self::$startTime . '|' . $_timeLimit, LOCK_EX);
                     if (is_callable($_handler)) {
-                        $logger->info($_handler, ['Running', $logData]);
+                        $logger->info($_handler, ['Run', ['args' => $_args]]);
 
-                        $start = microtime(true);
+                        $_start = microtime(true);
                         call_user_func_array($_handler, $_args);
-                        $logData['runtime'] = number_format((microtime(true) - $start), 3);
-                        $logger->info($_handler, ['Finish', $logData]);
+                        $logger->info($_handler, ['Done', ['args' => $_args, 'runTime' => number_format((microtime(true) - $_start), 3)]]);
                     } else {
-                        $logger->error($_handler, ['Missing handler', $logData]);
+                        $logger->error($_handler, ['Missing handler', ['args' => $_args]]);
                     }
                     // must break foreach in child process
                     break;
@@ -121,7 +117,7 @@ class Job
                 for ($i = 0; $i < $childCount; ++$i) {
                     pcntl_wait($status, 0);
                 }
-                $logger->info('', ['End', $logData]);
+                $logger->info('', ['End', ['startTime' => date('Y-m-d H:i:s', self::$startTime), 'runTime' => number_format((microtime(true) - $start), 3)]]);
             }
         }
         exit;
