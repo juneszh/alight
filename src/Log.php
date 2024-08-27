@@ -56,7 +56,7 @@ class Log
             }
 
             self::$instance[$logName] = new Logger($logName);
-            self::$instance[$logName]->pushHandler(new RotatingFileHandler($configPath . '/' . $logName . '.log', $maxFiles, Logger::DEBUG, true, $filePermission, true));
+            self::$instance[$logName]->pushHandler(new RotatingFileHandler($configPath . '/' . $logName . '.log', $maxFiles, 'debug', true, $filePermission, true));
         }
 
         return self::$instance[$logName];
@@ -73,6 +73,10 @@ class Log
     public static function error(Throwable $t)
     {
         $logger = self::init('error/alight');
-        $logger->error($t->getMessage(), $t->getTrace());
+        $trace = $t->getTrace();
+        if (isset($_SERVER['REQUEST_URI'])) {
+            array_unshift($trace, ['uri' => $_SERVER['REQUEST_URI']]);
+        }
+        $logger->error($t->getMessage(), $trace);
     }
 }
