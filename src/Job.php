@@ -97,14 +97,17 @@ class Job
                     $pid = posix_getpid();
 
                     file_put_contents($lockFile, $pid . '|' . self::$startTime . '|' . $_timeLimit, LOCK_EX);
+                    $logData = $_args ? ['args' => $_args] : [];
                     if (is_callable($_handler)) {
-                        $logger->info($_handler, ['Run', ['args' => $_args]]);
+                        $logger->info($_handler, array_merge(['Run'], $logData ? [$logData] : []));
 
                         $_start = microtime(true);
                         call_user_func_array($_handler, $_args);
-                        $logger->info($_handler, ['Done', ['args' => $_args, 'runTime' => number_format((microtime(true) - $_start), 3)]]);
+                        $logData['runTime'] = number_format((microtime(true) - $_start), 3);
+
+                        $logger->info($_handler, array_merge(['Done'], $logData ? [$logData] : []));
                     } else {
-                        $logger->error($_handler, ['Missing handler', ['args' => $_args]]);
+                        $logger->error($_handler, array_merge(['Missing handler'], $logData ? [$logData] : []));
                     }
                     // must break foreach in child process
                     break;
