@@ -106,7 +106,6 @@ class Response
      * @param null|string $message 
      * @param null|array $data
      * @param string $charset 
-     * @throws Exception 
      */
     public static function api(int $error = 0, ?string $message = null, ?array $data = null, string $charset = 'utf-8')
     {
@@ -159,7 +158,6 @@ class Response
      * 
      * @param string $file 
      * @param array $data 
-     * @throws Exception 
      */
     public static function render(string $file, array $data = [])
     {
@@ -227,7 +225,6 @@ class Response
      * @param null|array $allowHeaders 
      * @param null|array $allowMethods 
      * @return bool 
-     * @throws Exception 
      */
     public static function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null)
     {

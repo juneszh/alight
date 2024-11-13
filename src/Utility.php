@@ -22,7 +22,6 @@ class Utility
      * 
      * @param int $length 
      * @return string 
-     * @throws Exception 
      */
     public static function randomHex(int $length = 32): string
     {
@@ -37,7 +36,6 @@ class Utility
      * 
      * @param int $length 
      * @return string 
-     * @throws Exception 
      */
     public static function uniqueNumber(int $length = 16): string
     {

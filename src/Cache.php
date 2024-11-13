@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use ErrorException;
 use Exception;
 use Memcached;
 use Redis;
@@ -23,7 +22,6 @@ use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Adapter\RedisTagAwareAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
-use Symfony\Component\Cache\Exception\InvalidArgumentException;
 use Symfony\Component\Cache\Psr16Cache;
 
 class Cache
@@ -54,9 +52,6 @@ class Cache
      * 
      * @param string $configKey 
      * @return Psr16Cache 
-     * @throws Exception 
-     * @throws InvalidArgumentException 
-     * @throws ErrorException 
      */
     public static function init(string $configKey = ''): Psr16Cache
     {
@@ -68,9 +63,6 @@ class Cache
      * 
      * @param string $configKey 
      * @return Psr16Cache 
-     * @throws Exception 
-     * @throws InvalidArgumentException 
-     * @throws ErrorException 
      */
     public static function psr16(string $configKey = ''): Psr16Cache
     {
@@ -89,9 +81,6 @@ class Cache
      * 
      * @param string $configKey 
      * @return TagAwareAdapter 
-     * @throws Exception 
-     * @throws InvalidArgumentException 
-     * @throws ErrorException 
      */
     public static function psr6(string $configKey = '')
     {
@@ -130,8 +119,6 @@ class Cache
      * 
      * @param string $configKey 
      * @return Memcached 
-     * @throws Exception 
-     * @throws ErrorException 
      */
     public static function memcached(string $configKey = ''): Memcached
     {
@@ -153,8 +140,6 @@ class Cache
      * 
      * @param string $configKey 
      * @return Redis 
-     * @throws Exception 
-     * @throws InvalidArgumentException 
      */
     public static function redis(string $configKey = ''): Redis
     {
@@ -176,7 +161,6 @@ class Cache
      * 
      * @param string $configKey 
      * @return array 
-     * @throws Exception 
      */
     private static function getConfig(string $configKey): array
     {
@@ -208,9 +192,6 @@ class Cache
      * Pruning expired cache items
      * 
      * @param array $types 
-     * @throws Exception 
-     * @throws InvalidArgumentException 
-     * @throws ErrorException 
      * @see https://symfony.com/doc/current/components/cache/cache_pools.html#component-cache-cache-pool-prune
      */
     public static function prune(array $types = ['file'])

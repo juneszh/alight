@@ -13,16 +13,10 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use ErrorException;
 use Exception;
 use FastRoute;
 use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
-use LogicException;
-use Psr\Cache\InvalidArgumentException as CacheInvalidArgumentException;
-use RuntimeException;
-use Symfony\Component\Cache\Exception\InvalidArgumentException;
-use Symfony\Component\Cache\Exception\LogicException as ExceptionLogicException;
 
 class Router
 {
@@ -42,14 +36,6 @@ class Router
 
     /**
      * Router start
-     * 
-     * @throws Exception 
-     * @throws LogicException 
-     * @throws RuntimeException 
-     * @throws InvalidArgumentException 
-     * @throws ErrorException 
-     * @throws CacheInvalidArgumentException 
-     * @throws ExceptionLogicException 
      */
     public static function start()
     {
@@ -124,7 +110,6 @@ class Router
      * Get the route configuration files
      * 
      * @return array 
-     * @throws Exception 
      */
     private static function configFiles(): array
     {
@@ -168,9 +153,6 @@ class Router
      * @param string $method 
      * @param string $path 
      * @return array 
-     * @throws Exception 
-     * @throws LogicException 
-     * @throws RuntimeException 
      */
     private static function dispatch(array $configFiles, string $method, string $path = ''): array
     {
@@ -235,11 +217,6 @@ class Router
      * 
      * @param string $pattern 
      * @param int $cd 
-     * @throws Exception 
-     * @throws InvalidArgumentException 
-     * @throws ErrorException 
-     * @throws CacheInvalidArgumentException 
-     * @throws ExceptionLogicException 
      */
     private static function coolDown(string $pattern, int $cd)
     {
@@ -261,8 +238,6 @@ class Router
 
     /**
      * Clear route cache
-     * 
-     * @throws Exception 
      */
     public static function clearCache()
     {

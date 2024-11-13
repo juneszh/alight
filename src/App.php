@@ -13,25 +13,10 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use ErrorException;
-use Exception;
-use InvalidArgumentException;
-use LogicException;
-use RuntimeException;
-use Symfony\Component\Cache\Exception\InvalidArgumentException as ExceptionInvalidArgumentException;
-
 class App
 {
     /**
      * Starts the framework
-     * 
-     * @throws InvalidArgumentException 
-     * @throws Exception 
-     * @throws LogicException 
-     * @throws RuntimeException 
-     * @throws ErrorException 
-     * @throws ExceptionInvalidArgumentException 
-     * @throws ExceptionInvalidArgumentException 
      */
     public static function start()
     {

@@ -16,7 +16,6 @@ namespace Alight;
 use Exception;
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
-use Psr\Log\InvalidArgumentException;
 use Throwable;
 
 class Log
@@ -42,7 +41,6 @@ class Log
      * @param int $maxFiles 
      * @param null|int $filePermission 
      * @return Logger 
-     * @throws Exception 
      */
     public static function init(string $logName, int $maxFiles = 7, ?int $filePermission = null): Logger
     {
@@ -66,9 +64,6 @@ class Log
      * Default error log
      * 
      * @param Throwable $t 
-     * @throws Exception 
-     * @throws InvalidArgumentException 
-     * @throws Throwable 
      */
     public static function error(Throwable $t)
     {

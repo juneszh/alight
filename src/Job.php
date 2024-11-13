@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Alight;
 
 use Exception;
-use InvalidArgumentException;
 
 class Job
 {
@@ -34,8 +33,6 @@ class Job
      * Start run with fork process
      * 
      * @return never 
-     * @throws InvalidArgumentException 
-     * @throws Exception 
      */
     public static function start()
     {
@@ -130,7 +127,6 @@ class Job
      * Get the jobs to run this time 
      * 
      * @return array 
-     * @throws Exception 
      */
     private static function getJobs(): array
     {

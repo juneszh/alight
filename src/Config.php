@@ -99,7 +99,6 @@ class Config
      * Merge default configuration and user configuration
      * 
      * @return array 
-     * @throws Exception 
      */
     private static function init()
     {
@@ -118,7 +117,6 @@ class Config
      * 
      * @param string[] $keys 
      * @return mixed 
-     * @throws Exception 
      */
     public static function get(string ...$keys)
     {
@@ -147,7 +145,6 @@ class Config
      * @param string $class 
      * @param null|string $option 
      * @param mixed $value 
-     * @throws Exception 
      */
     public static function set(string $class, ?string $option, $value)
     {

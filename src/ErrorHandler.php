@@ -17,14 +17,11 @@ use Whoops\Run;
 use Whoops\Exception\Formatter;
 use Whoops\Handler\Handler;
 use Whoops\Handler\PrettyPageHandler;
-use InvalidArgumentException;
 
 class ErrorHandler
 {
     /**
      * Initializes error handler
-     * 
-     * @throws InvalidArgumentException 
      */
     public static function start()
     {

@@ -38,7 +38,6 @@ class Database
      * 
      * @param string $configKey 
      * @return Medoo 
-     * @throws Exception 
      */
     public static function init(string $configKey = ''): Medoo
     {
@@ -65,7 +64,6 @@ class Database
      * 
      * @param string $configKey 
      * @return array 
-     * @throws Exception 
      */
     private static function getConfig(string $configKey): array
     {
