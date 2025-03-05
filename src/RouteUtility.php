@@ -51,13 +51,13 @@ class RouteUtility
     }
 
     /**
-     * Set the cooldown time for the user's next request (authorization required)
+     * Set the interval between 2 requests for each user (authorization required)
      * 
      * @param int $second 
      * @return RouteUtility 
      */
 
-    public function cd(int $second)
+    public function debounce(int $second)
     {
         Route::$config[$this->index][__FUNCTION__] = $second;
         return $this;

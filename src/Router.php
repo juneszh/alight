@@ -83,8 +83,8 @@ class Router
                     throw new Exception('Missing authHandler definition.');
                 }
 
-                if (isset($routeData['cd'])) {
-                    self::coolDown($routeData['pattern'], $routeData['cd']);
+                if (isset($routeData['debounce'])) {
+                    self::debounce($routeData['pattern'], $routeData['debounce']);
                 }
             }
 
@@ -208,21 +208,21 @@ class Router
      * Limit request interval
      * 
      * @param string $pattern 
-     * @param int $cd 
+     * @param int $second 
      */
-    private static function coolDown(string $pattern, int $cd)
+    private static function debounce(string $pattern, int $second)
     {
         if (self::$authId) {
             $cache6 = Cache::psr6();
-            $cacheKey = 'alight.route_cd.' . md5(Request::method() . ' ' . $pattern) . '.' . self::$authId;
+            $cacheKey = 'alight.route_debounce.' . md5(Request::method() . ' ' . $pattern) . '.' . self::$authId;
             $cacheItem = $cache6->getItem($cacheKey);
             if ($cacheItem->isHit()) {
                 Response::api(429);
                 exit;
             } else {
                 $cacheItem->set(1);
-                $cacheItem->expiresAfter($cd);
-                $cacheItem->tag('alight.route_cd');
+                $cacheItem->expiresAfter($second);
+                $cacheItem->tag('alight.route_debounce');
                 $cache6->save($cacheItem);
             }
         }
