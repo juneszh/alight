@@ -24,6 +24,17 @@ class RouteUtility
     }
 
     /**
+     * Enable authorization verification
+     * 
+     * @return RouteUtility 
+     */
+    public function auth(): RouteUtility
+    {
+        Route::$config[$this->index][__FUNCTION__] = true;
+        return $this;
+    }
+
+    /**
      * Send a Cache-Control header
      * 
      * @param int $maxAge
@@ -31,35 +42,11 @@ class RouteUtility
      * @param array $options 
      * @return RouteUtility 
      */
-    public function cache(int $maxAge, ?int $sMaxAge = null, array $options = [])
+    public function cache(int $maxAge, ?int $sMaxAge = null, array $options = []): RouteUtility
     {
         Route::$config[$this->index][__FUNCTION__] = $maxAge;
         Route::$config[$this->index][__FUNCTION__ . 'S'] = $sMaxAge;
         Route::$config[$this->index][__FUNCTION__ . 'Options'] = $options;
-        return $this;
-    }
-
-    /**
-     * Enable authorization verification
-     * 
-     * @return RouteUtility 
-     */
-    public function auth()
-    {
-        Route::$config[$this->index][__FUNCTION__] = true;
-        return $this;
-    }
-
-    /**
-     * Set the interval between 2 requests for each user (authorization required)
-     * 
-     * @param int $second 
-     * @return RouteUtility 
-     */
-
-    public function debounce(int $second)
-    {
-        Route::$config[$this->index][__FUNCTION__] = $second;
         return $this;
     }
 
@@ -71,10 +58,33 @@ class RouteUtility
      * @param null|array $allowMethods 
      * @return RouteUtility 
      */
-    public function cors($allowOrigin = 'default', ?array $allowHeaders = null, ?array $allowMethods = null)
+    public function cors($allowOrigin = 'default', ?array $allowHeaders = null, ?array $allowMethods = null): RouteUtility
     {
         Route::$config[$this->index][__FUNCTION__] = [$allowOrigin, $allowHeaders, $allowMethods];
         Route::options(Route::$config[$this->index]['pattern'], [Response::class, 'cors'], ['allowOrigin' => $allowOrigin, 'allowHeaders' => $allowHeaders, 'allowMethods' => $allowMethods]);
+        return $this;
+    }
+
+    /**
+     * Set the interval between 2 requests for each user (authorization required)
+     * 
+     * @param int $second 
+     * @return RouteUtility 
+     */
+    public function debounce(int $second): RouteUtility
+    {
+        Route::$config[$this->index][__FUNCTION__] = $second;
+        return $this;
+    }
+
+    /**
+     * Compress/minify the HTML
+     * 
+     * @return RouteUtility 
+     */
+    public function minify(): RouteUtility
+    {
+        Route::$config[$this->index][__FUNCTION__] = true;
         return $this;
     }
 }

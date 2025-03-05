@@ -17,6 +17,7 @@ use Exception;
 use FastRoute;
 use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
+use voku\helper\HtmlMin;
 
 class Router
 {
@@ -53,6 +54,14 @@ class Router
         } else {
             $routeData = $routeResult[1];
             $routeArgs = $routeData['args'] ? $routeResult[2] + $routeData['args'] : $routeResult[2];
+
+            if (isset($routeData['minify'])) {
+                ob_start();
+                register_shutdown_function(function() {
+                    $htmlMin = new HtmlMin();
+                    echo $htmlMin->minify(ob_get_clean());
+                });
+            }
 
             Response::eTag();
             Response::lastModified();
