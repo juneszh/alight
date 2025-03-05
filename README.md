@@ -728,13 +728,14 @@ There are also some useful helpers placed in different namespaces. Please click 
 
 ## Credits
 * Composer requires
-    * [nikic/fast-route](https://github.com/nikic/FastRoute/)
-    * [catfan/medoo](https://medoo.in/)
+    * [nikic/fast-route](https://github.com/nikic/FastRoute)
+    * [catfan/medoo](https://medoo.in)
     * [symfony/cache](https://symfony.com/doc/current/components/cache.html)
-    * [monolog/monolog](https://github.com/Seldaek/monolog/)
-    * [filp/whoops](https://github.com/filp/whoops/)
+    * [monolog/monolog](https://github.com/Seldaek/monolog)
+    * [filp/whoops](https://github.com/filp/whoops)
+    * [voku/html-min](https://github.com/voku/HtmlMin)
 * Special thanks
-    * [mikecao/flight](https://flightphp.com/)
+    * [mikecao/flight](https://flightphp.com)
  
 
 ## License
