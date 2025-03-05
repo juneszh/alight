@@ -48,10 +48,8 @@ class Job
         $jobs = self::getJobs();
         if ($jobs) {
             $lockPath = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/job';
-            if (!is_dir($lockPath)) {
-                if (!mkdir($lockPath, 0777, true)) {
-                    throw new Exception('Failed to create job lock directory.');
-                }
+            if (!is_dir($lockPath) && !@mkdir($lockPath, 0777, true)) {
+                throw new Exception('Failed to create job lock directory.');
             }
 
             $logger = Log::init('job/scheduler');

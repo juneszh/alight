@@ -35,17 +35,11 @@ class Cache
         'defaultLifetime' => 0,
     ];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    private function __destruct()
-    {
-    }
+    private function __destruct() {}
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     /**
      * Initializes the instance (psr16 alias)

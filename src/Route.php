@@ -23,17 +23,11 @@ class Route
     private static $beforeHandler;
     public static bool $disableCache = false;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    private function __destruct()
-    {
-    }
+    private function __destruct() {}
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
 
     /** 

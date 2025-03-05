@@ -22,17 +22,11 @@ class Router
 {
     private static $authId;
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    private function __destruct()
-    {
-    }
+    private function __destruct() {}
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     /**
      * Router start
@@ -161,10 +155,8 @@ class Router
         if ($configFiles && in_array($method, Request::ALLOW_METHODS)) {
             foreach ($configFiles as $_configFile) {
                 $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_configFile, '.php') . '/' . filemtime($_configFile);
-                if (!is_dir($configStorage)) {
-                    if (!mkdir($configStorage, 0777, true)) {
-                        throw new Exception('Failed to create route directory.');
-                    }
+                if (!is_dir($configStorage) && !@mkdir($configStorage, 0777, true)) {
+                    throw new Exception('Failed to create route directory.');
                 }
 
                 $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) use ($method, $_configFile, $configStorage) {

@@ -61,5 +61,4 @@ class ErrorHandler
 
         $whoops->register();
     }
-
 }

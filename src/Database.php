@@ -21,17 +21,11 @@ class Database
 {
     public static array $instance = [];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    private function __destruct()
-    {
-    }
+    private function __destruct() {}
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     /**
      * Initializes the instance

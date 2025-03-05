@@ -22,17 +22,11 @@ class Log
 {
     public static $instance = [];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 
-    private function __destruct()
-    {
-    }
+    private function __destruct() {}
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     /**
      * Initializes the instance
@@ -47,10 +41,8 @@ class Log
         $logName = trim($logName, '/');
         if (!isset(self::$instance[$logName]) || !(self::$instance[$logName] instanceof Logger)) {
             $configPath = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/log';
-            if (!is_dir($configPath)) {
-                if (!mkdir($configPath, 0777, true)) {
-                    throw new Exception('Failed to create log directory.');
-                }
+            if (!is_dir($configPath) && !@mkdir($configPath, 0777, true)) {
+                throw new Exception('Failed to create log directory.');
             }
 
             self::$instance[$logName] = new Logger($logName);

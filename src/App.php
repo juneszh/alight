@@ -36,7 +36,7 @@ class App
      * @param string $path Relative to file system's root when first character is '/'
      * @return string 
      */
-    public static function root(string $path = ''): string
+    public static function root(string $path = ''): ?string
     {
         if ($path === null) {
             return null;
