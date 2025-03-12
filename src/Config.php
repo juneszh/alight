@@ -85,9 +85,7 @@ class Config
             ],
         ], 
          */
-        'cache' => [
-            'type' => 'file',
-        ],
+        'cache' => [],
 
         /* 
         'job' => 'config/job.php',
