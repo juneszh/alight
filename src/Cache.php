@@ -114,7 +114,7 @@ class Cache
      * @param string $configKey 
      * @return Memcached 
      */
-    public static function memcached(string $configKey = ''): Memcached
+    public static function memcached(string $configKey = 'memcached'): Memcached
     {
         if (isset(self::$instance[$configKey]['client'])) {
             $client = self::$instance[$configKey]['client'];
@@ -135,7 +135,7 @@ class Cache
      * @param string $configKey 
      * @return Redis 
      */
-    public static function redis(string $configKey = ''): Redis
+    public static function redis(string $configKey = 'redis'): Redis
     {
         if (isset(self::$instance[$configKey]['client'])) {
             $client = self::$instance[$configKey]['client'];
