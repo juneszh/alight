@@ -85,15 +85,58 @@ class Utility
             if ($filter) {
                 $array = array_values(array_filter($array, function ($value) use ($filter) {
                     foreach ($filter as $k => $v) {
+                        $symbol = '';
+                        $bracketStart = strrpos($k, '[');
+                        if ($bracketStart) {
+                            $symbol = substr($k, $bracketStart + 1, -1);
+                            $k = substr($k, 0, $bracketStart);
+                        }
+
                         if (!isset($value[$k])) {
                             return false;
                         } elseif (is_array($v)) {
-                            if (!in_array($value[$k], $v)) {
-                                return false;
+                            if ($symbol === '!') {
+                                if (in_array($value[$k], $v)) {
+                                    return false;
+                                }
+                            } elseif ($symbol === '<>') {
+                                if ($value[$k] < $v[0] && $value[$k] > $v[0]) {
+                                    return false;
+                                }
+                            } elseif ($symbol === '><') {
+                                if ($value[$k] >= $v[0] && $value[$k] <= $v[0]) {
+                                    return false;
+                                }
+                            } else {
+                                if (!in_array($value[$k], $v)) {
+                                    return false;
+                                }
                             }
                         } else {
-                            if ($value[$k] != $v) {
-                                return false;
+                            if ($symbol === '!') {
+                                if ($value[$k] == $v) {
+                                    return false;
+                                }
+                            } elseif ($symbol === '>') {
+                                if ($value[$k] <= $v) {
+                                    return false;
+                                }
+                            } elseif ($symbol === '>=') {
+                                if ($value[$k] < $v) {
+                                    return false;
+                                }
+                            } elseif ($symbol === '<') {
+                                if ($value[$k] >= $v) {
+                                    return false;
+                                }
+                            } elseif ($symbol === '<=') {
+                                if ($value[$k] > $v) {
+                                    return false;
+                                }
+                            } else {
+                                if ($value[$k] != $v) {
+                                    return false;
+                                }
                             }
                         }
                     }
