@@ -22,7 +22,7 @@ class CacheHelper
      * 
      * @param array|string $key Set a string as the cache key, or set the args array to generate the cache key like: class.function.args
      * @param ?int $expiresAfter Greater than 0 means caching for seconds; equal to 0 means permanent caching; less than 0 means deleting the cache; null means running the callback without using the cache
-     * @param callable $callback Callback function used to return the cache value
+     * @param callable $callback Callback function used to return the cache value, return null to not save the cache
      * @param string $configKey
      * @return mixed 
      */
@@ -37,7 +37,7 @@ class CacheHelper
             if ($key) {
                 $cache = Cache::psr6($configKey);
                 if ($expiresAfter >= 0) {
-                    $return = $cache->get($key[0], function (ItemInterface $item) use ($key, $expiresAfter, $callback) {
+                    $return = $cache->get($key[0], function (ItemInterface $item, &$save) use ($key, $expiresAfter, $callback) {
                         $tags = array_slice($key, 1);
                         if ($tags) {
                             $item->tag($tags);
@@ -47,7 +47,12 @@ class CacheHelper
                             $item->expiresAfter($expiresAfter);
                         }
 
-                        return call_user_func($callback);
+                        $return = call_user_func($callback);
+                        if ($return === null){
+                            $save = false;
+                        }
+
+                        return $return;
                     });
                 } else {
                     $return = $cache->delete($key[0]);
