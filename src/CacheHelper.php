@@ -55,7 +55,7 @@ class CacheHelper
                         return $return;
                     });
                 } else {
-                    $return = $cache->delete($key[0]);
+                    $cache->delete($key[0]);
                 }
             }
         }
