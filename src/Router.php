@@ -57,7 +57,7 @@ class Router
 
             if (isset($routeData['minify'])) {
                 ob_start();
-                register_shutdown_function(function() {
+                register_shutdown_function(function () {
                     $htmlMin = new HtmlMin();
                     echo $htmlMin->minify(ob_get_clean());
                 });
@@ -223,7 +223,7 @@ class Router
     {
         if (self::$authId) {
             $cache6 = Cache::psr6();
-            $cacheKey = 'alight.route_debounce.' . md5(Request::method() . ' ' . $pattern) . '.' . self::$authId;
+            $cacheKey = 'Alight_Router.debounce.' . md5(Request::method() . ' ' . $pattern) . '.' . self::$authId;
             $cacheItem = $cache6->getItem($cacheKey);
             if ($cacheItem->isHit()) {
                 Response::api(429);
@@ -231,7 +231,7 @@ class Router
             } else {
                 $cacheItem->set(1);
                 $cacheItem->expiresAfter($second);
-                $cacheItem->tag('alight.route_debounce');
+                $cacheItem->tag(['Alight_Router', 'Alight_Router.debounce']);
                 $cache6->save($cacheItem);
             }
         }
