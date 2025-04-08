@@ -106,24 +106,29 @@ class CacheHelper
     }
 
     /**
-     * Batch clear cache by class or class.function
+     * Batch clear cache by [class] or [class, function]
      * 
-     * @param string $class 
-     * @param string $function 
+     * @param callable $classFunction 
      * @param string $configKey
      * @return bool 
      */
-    public static function clear(string $class, string $function = '', string $configKey = ''): bool
+    public static function clear(callable $classFunction, string $configKey = ''): bool
     {
-        $cache = Cache::psr6($configKey);
-        $chars = str_split(ItemInterface::RESERVED_CHARACTERS);
+        if (is_array($classFunction) && $classFunction){
+            $cache = Cache::psr6($configKey);
+            $chars = str_split(ItemInterface::RESERVED_CHARACTERS);
 
-        if ($function) {
-            $tags = [str_replace($chars, '_', $class) . '.' . str_replace($chars, '_', $function)];
-        } else {
-            $tags = [str_replace($chars, '_', $class)];
+            $class = is_object($classFunction[0]) ? get_class($classFunction[0]) : $classFunction[0];
+            $function = $classFunction[1] ?? '';
+
+            if ($function) {
+                $tags = [str_replace($chars, '_', $class) . '.' . str_replace($chars, '_', $function)];
+            } else {
+                $tags = [str_replace($chars, '_', $class)];
+            }
+    
+            return $cache->invalidateTags($tags);
         }
-
-        return $cache->invalidateTags($tags);
+        return false;
     }
 }
