@@ -92,6 +92,7 @@ class CacheHelper
      */
     public static function key(array $args): array
     {
+        $keyItems = [];
         $class = '';
         $function = '';
 
@@ -108,19 +109,21 @@ class CacheHelper
                 $class = str_replace($chars, '_', $target['class'] ?? str_replace(App::root(), '', $target['file']));
                 $function = $target['function'] ?? '';
                 if ($function) {
-                    array_unshift($args, $class, $function);
+                    $keyItems = [$class, $function, ...$args];
                 } else {
-                    array_unshift($args, $class);
+                    $keyItems = [$class, ...$args];
                 }
             }
         }
 
-        $return = [join('.', $args)];
-        if ($function) {
-            $return[] = join('.', [$class, $function]);
-        }
+        $return = [join('.', $keyItems)];
+        
         if ($class) {
             $return[] = $class;
+        }
+
+        if ($function && $args) {
+            $return[] = join('.', [$class, $function]);
         }
 
         return $return;
