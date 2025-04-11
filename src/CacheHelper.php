@@ -146,9 +146,12 @@ class CacheHelper
             $function = $classFunction[1] ?? '';
 
             if ($function) {
-                $tags = [str_replace($chars, '_', $class) . '.' . str_replace($chars, '_', $function)];
+                $key = str_replace($chars, '_', $class) . '.' . str_replace($chars, '_', $function);
+                $tags = [$key];
+                $cache->deleteItem($key);
             } else {
-                $tags = [str_replace($chars, '_', $class)];
+                $key = str_replace($chars, '_', $class);
+                $tags = [$key];
             }
 
             return $cache->invalidateTags($tags);
