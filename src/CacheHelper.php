@@ -88,34 +88,40 @@ class CacheHelper
      * Generate keys
      * 
      * @param array $args 
+     * @param null|callable $classFunction 
      * @return array 
      */
-    public static function key(array $args): array
+    public static function key(array $args, ?callable $classFunction = null): array
     {
         $keyItems = [];
         $class = '';
         $function = '';
+        $chars = str_split(ItemInterface::RESERVED_CHARACTERS);
 
-        $backtrace = debug_backtrace();
-        if (isset($backtrace[1])) {
-            if (($backtrace[1]['class'] ?? '') !== __CLASS__) {
-                $target = $backtrace[1];
-            } else {
-                $target = $backtrace[2] ?? [];
-            }
-
-            if ($target) {
-                $chars = str_split(ItemInterface::RESERVED_CHARACTERS);
-                $class = str_replace($chars, '_', $target['class'] ?? str_replace(App::root(), '', $target['file']));
-                $function = $target['function'] ?? '';
-                if ($function) {
-                    $keyItems = [$class, $function, ...$args];
+        if (is_array($classFunction) && $classFunction) {
+            $class = str_replace($chars, '_', is_object($classFunction[0]) ? get_class($classFunction[0]) : $classFunction[0]);
+            $function = $classFunction[1] ?? '';
+        } else {
+            $backtrace = debug_backtrace();
+            if (isset($backtrace[1])) {
+                if (($backtrace[1]['class'] ?? '') !== __CLASS__) {
+                    $target = $backtrace[1];
                 } else {
-                    $keyItems = [$class, ...$args];
+                    $target = $backtrace[2] ?? [];
+                }
+    
+                if ($target) {
+                    $class = str_replace($chars, '_', $target['class'] ?? str_replace(App::root(), '', $target['file']));
+                    $function = $target['function'] ?? '';
                 }
             }
         }
-
+        
+        if ($function) {
+            $keyItems = [$class, $function, ...$args];
+        } else {
+            $keyItems = [$class, ...$args];
+        }
         $return = [join('.', $keyItems)];
         
         if ($class) {
@@ -146,7 +152,7 @@ class CacheHelper
             $function = $classFunction[1] ?? '';
 
             if ($function) {
-                $key = str_replace($chars, '_', $class) . '.' . str_replace($chars, '_', $function);
+                $key = str_replace($chars, '_', $class) . '.' . $function;
                 $tags = [$key];
                 $cache->deleteItem($key);
             } else {
