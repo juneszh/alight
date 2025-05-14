@@ -148,7 +148,7 @@ class CacheHelper
      * @param string $configKey
      * @return bool 
      */
-    public static function clear(callable $classFunction, string $configKey = ''): bool
+    public static function clear($classFunction, string $configKey = ''): bool
     {
         if (is_array($classFunction) && $classFunction) {
             $cache = Cache::psr6($configKey);
