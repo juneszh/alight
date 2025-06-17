@@ -109,7 +109,7 @@ class CacheHelper
                 } else {
                     $target = $backtrace[2] ?? [];
                 }
-    
+
                 if ($target) {
                     $class = str_replace($chars, '_', $target['class'] ?? str_replace(App::root(), '', $target['file']));
                     $function = $target['function'] ?? '';
@@ -122,17 +122,13 @@ class CacheHelper
                 $args[$_index] = join('_', $_arg);
             }
         }
-        
+
         if ($function) {
             $keyItems = [$class, $function, ...$args];
         } else {
             $keyItems = [$class, ...$args];
         }
         $return = [join('.', $keyItems)];
-        
-        if ($class) {
-            $return[] = $class;
-        }
 
         if ($function && $args) {
             $return[] = join('.', [$class, $function]);
@@ -154,16 +150,13 @@ class CacheHelper
             $cache = Cache::psr6($configKey);
             $chars = str_split(ItemInterface::RESERVED_CHARACTERS);
 
-            $class = is_object($classFunction[0]) ? get_class($classFunction[0]) : $classFunction[0];
-            $function = $classFunction[1] ?? '';
+            $class = str_replace($chars, '_', is_object($classFunction[0]) ? get_class($classFunction[0]) : $classFunction[0]);
+            $functions = isset($classFunction[1]) ? [$classFunction[1]] : get_class_methods($classFunction[0]);
 
-            if ($function) {
-                $key = str_replace($chars, '_', $class) . '.' . $function;
+            foreach ($functions as $function) {
+                $key = $class . '.' . $function;
                 $tags = [$key];
                 $cache->deleteItem($key);
-            } else {
-                $key = str_replace($chars, '_', $class);
-                $tags = [$key];
             }
 
             return $cache->invalidateTags($tags);
