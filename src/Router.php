@@ -59,6 +59,9 @@ class Router
                 ob_start();
                 register_shutdown_function(function () {
                     $htmlMin = new HtmlMin();
+                    $htmlMin->doKeepHttpAndHttpsPrefixOnExternalAttributes();
+                    $htmlMin->doRemoveOmittedQuotes(false);
+                    $htmlMin->doRemoveOmittedHtmlTags(false);
                     echo $htmlMin->minify(ob_get_clean());
                 });
             }
