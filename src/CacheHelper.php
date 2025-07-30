@@ -22,7 +22,7 @@ class CacheHelper
      * Get result with the cache helper
      * 
      * @param array|string $key Set a string as the cache key, or set the args array to generate the cache key like: class.function.args
-     * @param ?int $time Greater than 0 means caching for seconds; equal to 0 means permanent caching; less than 0 means deleting the cache; null means return the $value without using the cache
+     * @param ?int $time Greater than 0 means caching for seconds; equal to 0/-1 means deleting the cache; less than -1 means update the cache witch new $value; null means return the $value without using the cache
      * @param mixed $value If it is an anonymous function, it will be called only when the cache expires. Return null to not save the cache.
      * @param string $configKey
      * @return mixed 
@@ -37,9 +37,11 @@ class CacheHelper
             $key = is_array($key) ? self::key($key) : ($key ? [$key] : []);
             if ($key) {
                 $cache = Cache::psr6($configKey);
-                if ($time < 0) {
+                if ($time <= 0) {
                     $cache->delete($key[0]);
-                } else {
+                }
+                if ($time && $time !== -1) {
+                    $time = abs($time);
                     if ($value instanceof Closure) {
                         $return = $cache->get($key[0], function (ItemInterface $item, &$save) use ($key, $time, $value) {
                             $tags = array_slice($key, 1);
@@ -47,9 +49,7 @@ class CacheHelper
                                 $item->tag($tags);
                             }
 
-                            if ($time > 0) {
-                                $item->expiresAfter($time);
-                            }
+                            $item->expiresAfter($time);
 
                             $return = call_user_func($value);
                             if ($return === null) {
@@ -69,10 +69,7 @@ class CacheHelper
                             $item->tag($tags);
                         }
 
-                        if ($time > 0) {
-                            $item->expiresAfter($time);
-                        }
-
+                        $item->expiresAfter($time);
                         $item->set($value);
                         $cache->save($item);
                         $return = $value;
