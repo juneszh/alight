@@ -105,15 +105,15 @@ class Response
      * @param int $error 
      * @param null|string $message 
      * @param null|array $data
+     * @param null|array $extraData
      * @param string $charset 
      */
-    public static function api(int $error = 0, ?string $message = null, ?array $data = null, string $charset = 'utf-8')
+    public static function api(int $error = 0, ?string $message = null, ?array $data = null, ?array $extraData = null, string $charset = 'utf-8')
     {
         $status = isset(self::HTTP_STATUS[$error]) ? $error : 200;
         $json = [
             'error' => $error,
-            'message' => self::HTTP_STATUS[$status] ?? '',
-            'data' => new ArrayObject()
+            'message' => self::HTTP_STATUS[$status] ?? ''
         ];
 
         if ($message !== null) {
@@ -122,6 +122,10 @@ class Response
 
         if ($data !== null) {
             $json['data'] = $data;
+        }
+
+        if ($extraData !== null) {
+            $json = array_merge($json, $extraData);
         }
 
         $jsonEncode = json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
