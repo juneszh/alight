@@ -117,6 +117,8 @@ class CacheHelper
         foreach ($args as $_index => $_arg) {
             if (is_array($_arg)) {
                 $args[$_index] = join('_', $_arg);
+            } elseif (is_bool($_arg)) {
+                $args[$_index] = (int) $_arg;
             }
         }
 
