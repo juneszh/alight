@@ -114,13 +114,13 @@ class CacheHelper
             }
         }
 
-        foreach ($args as $_index => $_arg) {
-            if (is_array($_arg)) {
-                $args[$_index] = join('_', $_arg);
-            } elseif (is_bool($_arg)) {
-                $args[$_index] = (int) $_arg;
+        array_walk($args, function (&$value) {
+            if (is_array($value)) {
+                $value = join('_', array_map(fn($_v) => var_export($_v, true), $value));
+            } elseif (is_bool($value) || is_null($value)) {
+                $value = var_export($value, true);
             }
-        }
+        });
 
         if ($function) {
             $keyItems = [$class, $function, ...$args];
