@@ -129,9 +129,9 @@ class Response
         }
 
         $jsonEncode = json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        if (Request::get('jsonp')) {
+        if (Request::query('jsonp')) {
             header('Content-Type: application/javascript; charset=' . $charset, true, $status);
-            echo Request::get('jsonp') . '(' . $jsonEncode . ')';
+            echo Request::query('jsonp') . '(' . $jsonEncode . ')';
         } else {
             header('Content-Type: application/json; charset=' . $charset, true, $status);
             echo $jsonEncode;

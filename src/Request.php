@@ -81,13 +81,28 @@ class Request
      * @param mixed $set 
      * @return mixed 
      */
-    public static function get(string $key = '', $default = null, $set = null)
+    public static function query(string $key = '', $default = null, $set = null)
     {
-        static $get = null;
-        if ($get === null) {
-            $get = $_GET ?: [];
+        static $query = null;
+        if ($query === null) {
+            $query = $_GET ?: [];
         }
-        return self::getter($get, $key, $default, $set);
+        return self::getter($query, $key, $default, $set);
+    }
+
+    /**
+     * Get the request body
+     * 
+     * @return string 
+     */
+    public static function body(): string
+    {
+        static $body = null;
+        if ($body === null) {
+            $body = file_get_contents('php://input') ?: '';
+        }
+
+        return $body;
     }
 
     /**
@@ -98,22 +113,48 @@ class Request
      * @param mixed $set 
      * @return mixed 
      */
-    public static function post(string $key = '', $default = null, $set = null)
+    public static function data(string $key = '', $default = null, $set = null)
     {
-        static $post = null;
-        if ($post === null) {
-            $post = $_POST ?: [];
+        static $data = null;
+        if ($data === null) {
+            $data = $_POST ?: [];
             if (in_array(self::method(), ['POST', 'PUT', 'DELETE', 'PATCH']) && self::isJson()) {
                 if (Utility::isJson(self::body())) {
-                    $post = json_decode(self::body(), true);
+                    $data = json_decode(self::body(), true);
                 }
             }
         }
-        return self::getter($post, $key, $default, $set);
+        return self::getter($data, $key, $default, $set);
     }
 
     /**
-     * Simulate $_REQUEST, contains the contents of get(), post()
+     * Alias for query()
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function get(string $key = '', $default = null, $set = null)
+    {
+        return self::query($key, $default, $set);
+    }
+
+    /**
+     * Alias for data()
+     * 
+     * @param string $key 
+     * @param mixed $default 
+     * @param mixed $set 
+     * @return mixed 
+     */
+    public static function post(string $key = '', $default = null, $set = null)
+    {
+        return self::data($key, $default, $set);
+    }
+
+    /**
+     * Simulate $_REQUEST, contains the contents of query(), data()
      * 
      * @param string $key 
      * @param mixed $default 
@@ -124,7 +165,7 @@ class Request
     {
         static $request = null;
         if ($request === null) {
-            $request = array_replace_recursive(self::get(), self::post());
+            $request = array_replace_recursive(self::query(), self::data());
         }
         return self::getter($request, $key, $default, $set);
     }
@@ -240,10 +281,10 @@ class Request
         if ($method === null) {
             if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
                 $method = strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
-            } elseif (Request::post('_method')) {
-                $method = strtoupper(Request::post('_method'));
-            } elseif (Request::get('_method')) {
-                $method = strtoupper(Request::get('_method'));
+            } elseif (Request::data('_method')) {
+                $method = strtoupper(Request::data('_method'));
+            } elseif (Request::query('_method')) {
+                $method = strtoupper(Request::query('_method'));
             } else {
                 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? '');
             }
@@ -357,20 +398,5 @@ class Request
         }
 
         return $path;
-    }
-
-    /**
-     * Get the request body
-     * 
-     * @return string 
-     */
-    public static function body(): string
-    {
-        static $body = null;
-        if ($body === null) {
-            $body = file_get_contents('php://input') ?: '';
-        }
-
-        return $body;
     }
 }
