@@ -146,13 +146,14 @@ class Response
      */
     public static function errorPage($status, ?string $message = null)
     {
+        if (isset(self::HTTP_STATUS[$status])) {
+            http_response_code((int) $status);
+        }
+        
         $errorPageHandler = Config::get('app', 'errorPageHandler');
         if (is_callable($errorPageHandler)) {
             call_user_func_array($errorPageHandler, [$status, $message]);
         } else {
-            if (isset(self::HTTP_STATUS[$status])) {
-                http_response_code((int) $status);
-            }
             echo '<h1>', $status, ' ', ($message ?: self::HTTP_STATUS[$status] ?? ''), '</h1>';
         }
     }
