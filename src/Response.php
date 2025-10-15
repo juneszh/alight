@@ -128,7 +128,7 @@ class Response
             $json = array_merge($json, $extraData);
         }
 
-        $jsonEncode = json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $jsonEncode = json_encode($json, JSON_UNESCAPED_UNICODE);
         if (Request::query('jsonp')) {
             header('Content-Type: application/javascript; charset=' . $charset, true, $status);
             echo Request::query('jsonp') . '(' . $jsonEncode . ')';
