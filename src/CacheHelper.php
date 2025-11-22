@@ -24,10 +24,11 @@ class CacheHelper
      * @param array|string $key Set a string as the cache key, or set the args array to generate the cache key like: class.function.args
      * @param ?int $time Greater than 0 means caching for seconds; equal to 0/-1 means deleting the cache; less than -1 means update the cache witch new $value; null means return the $value without using the cache
      * @param mixed $value If it is an anonymous function, it will be called only when the cache expires. Return null to not save the cache.
+     * @param int $nullTime caching for seconds when $value function return null
      * @param string $configKey
      * @return mixed 
      */
-    public static function get($key = [], ?int $time, $value = null, string $configKey = '')
+    public static function get($key = [], ?int $time, $value = null, int $nullTime = 0, string $configKey = '')
     {
         $return = null;
 
@@ -43,17 +44,21 @@ class CacheHelper
                 if ($time && $time !== -1) {
                     $time = abs($time);
                     if ($value instanceof Closure) {
-                        $return = $cache->get($key[0], function (ItemInterface $item, &$save) use ($key, $time, $value) {
+                        $return = $cache->get($key[0], function (ItemInterface $item, &$save) use ($key, $time, $value, $nullTime) {
                             $tags = array_slice($key, 1);
                             if ($tags) {
                                 $item->tag($tags);
                             }
 
-                            $item->expiresAfter($time);
-
                             $return = call_user_func($value);
                             if ($return === null) {
-                                $save = false;
+                                if ($nullTime > 0) {
+                                    $item->expiresAfter($nullTime);
+                                } else {
+                                    $save = false;
+                                }
+                            } else {
+                                $item->expiresAfter($time);
                             }
 
                             return $return;
@@ -76,6 +81,27 @@ class CacheHelper
                     }
                 }
             }
+        }
+
+        return $return;
+    }
+
+    /**
+     * Get the cache expiry
+     * 
+     * @param array|string $key 
+     * @param string $configKey
+     * @return array 
+     */
+    public static function getExpiry($key = [], string $configKey = ''): int
+    {
+        $return = 0;
+
+        $key = is_array($key) ? self::key($key) : ($key ? [$key] : []);
+        if ($key) {
+            $cache = Cache::psr6($configKey);
+            $item = $cache->getItem($key[0]);
+            $return = $item->getMetadata()[ItemInterface::METADATA_EXPIRY] ?? 0;
         }
 
         return $return;
