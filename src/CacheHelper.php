@@ -25,10 +25,11 @@ class CacheHelper
      * @param ?int $time Greater than 0 means caching for seconds; equal to 0/-1 means deleting the cache; less than -1 means update the cache witch new $value; null means return the $value without using the cache
      * @param mixed $value If it is an anonymous function, it will be called only when the cache expires. Return null to not save the cache.
      * @param int $nullTime caching for seconds when $value function return null
+     * @param bool $addTag Add a tag with the function name to clear
      * @param string $configKey
      * @return mixed 
      */
-    public static function get($key = [], ?int $time, $value = null, int $nullTime = 0, string $configKey = '')
+    public static function get($key = [], ?int $time, $value = null, int $nullTime = 0, bool $addTag = true, string $configKey = '')
     {
         $return = null;
 
@@ -44,8 +45,8 @@ class CacheHelper
                 if ($time && $time !== -1) {
                     $time = abs($time);
                     if ($value instanceof Closure) {
-                        $return = $cache->get($key[0], function (ItemInterface $item, &$save) use ($key, $time, $value, $nullTime) {
-                            $tags = array_slice($key, 1);
+                        $return = $cache->get($key[0], function (ItemInterface $item, &$save) use ($key, $time, $value, $nullTime, $addTag) {
+                            $tags = $addTag ? array_slice($key, 1) : [];
                             if ($tags) {
                                 $item->tag($tags);
                             }
@@ -69,7 +70,7 @@ class CacheHelper
                     } else {
                         $item = $cache->getItem($key[0]);
 
-                        $tags = array_slice($key, 1);
+                        $tags = $addTag ? array_slice($key, 1) : [];
                         if ($tags) {
                             $item->tag($tags);
                         }
