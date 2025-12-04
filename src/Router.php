@@ -21,8 +21,6 @@ use voku\helper\HtmlMin;
 
 class Router
 {
-    private static $authId;
-
     private function __construct() {}
 
     private function __destruct() {}
@@ -89,7 +87,8 @@ class Router
                     if (!is_callable($routeData['authHandler'][0])) {
                         throw new Exception('Invalid authHandler specified.');
                     }
-                    self::$authId = call_user_func_array($routeData['authHandler'][0], $routeData['authHandler'][1]);
+                    $authId = call_user_func_array($routeData['authHandler'][0], $routeData['authHandler'][1]);
+                    self::getAuthId($authId);
                 } else {
                     throw new Exception('Missing authHandler definition.');
                 }
@@ -223,18 +222,15 @@ class Router
      */
     private static function debounce(string $pattern, int $second)
     {
-        if (self::$authId) {
-            $cache6 = Cache::psr6();
-            $cacheKey = 'Alight_Router.debounce.' . md5(Request::method() . ' ' . $pattern) . '.' . self::$authId;
-            $cacheItem = $cache6->getItem($cacheKey);
-            if ($cacheItem->isHit()) {
+        $authId = self::getAuthId();
+        if ($authId) {
+            $cache = Cache::init();
+            $cacheKey = 'Alight_Router.debounce.' . md5(Request::method() . ' ' . $pattern) . '.' . $authId;
+            if ($cache->has($cacheKey)) {
                 Response::api(429);
                 exit;
             } else {
-                $cacheItem->set(1);
-                $cacheItem->expiresAfter($second);
-                $cacheItem->tag(['Alight_Router', 'Alight_Router.debounce']);
-                $cache6->save($cacheItem);
+                $cache->set($cacheKey, 1, $second);
             }
         }
     }
@@ -254,10 +250,16 @@ class Router
     /**
      * Get authorized user id
      * 
+     * @param mixed $setId
      * @return mixed 
      */
-    public static function getAuthId()
+
+    public static function getAuthId($setId = null)
     {
-        return self::$authId;
+        static $authId = null;
+        if ($setId !== null) {
+            $authId = $setId;
+        }
+        return $authId;
     }
 }
