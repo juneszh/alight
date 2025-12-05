@@ -30,7 +30,7 @@ class Cache
     private const DEFAULT_CONFIG = [
         'type' => '',
         'dsn' => '',
-        'options' => [],
+        'option' => [],
         'namespace' => '',
         'defaultLifetime' => 0,
     ];
@@ -123,7 +123,7 @@ class Cache
             if ($config['type'] !== 'memcached') {
                 throw new Exception('Incorrect type in cache configuration \'' . $configKey . '\'.');
             }
-            $client = MemcachedAdapter::createConnection($config['dsn'], $config['options']);
+            $client = MemcachedAdapter::createConnection($config['dsn'], $config['option']);
             self::$instance[$configKey]['client'] = $client;
         }
         return $client;
@@ -144,7 +144,7 @@ class Cache
             if ($config['type'] !== 'redis') {
                 throw new Exception('Incorrect type in cache configuration \'' . $configKey . '\'.');
             }
-            $client = RedisAdapter::createConnection($config['dsn'], $config['options']);
+            $client = RedisAdapter::createConnection($config['dsn'], $config['option']);
             self::$instance[$configKey]['client'] = $client;
         }
         return $client;
