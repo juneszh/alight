@@ -200,7 +200,7 @@ class Response
             throw new RuntimeException("Template file not found: {$template}.");
         }
 
-        header('Content-Type: text/html; charset=utf-8', true, 200);
+        header('Content-Type: text/html; charset=utf-8', true);
 
         if ($data) {
             extract($data);
