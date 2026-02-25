@@ -60,7 +60,11 @@ class RouteMiddleware
             $authId = call_user_func_array(Router::$setting['authHandler'][0], Router::$setting['authHandler'][1]);
             self::getAuthId($authId);
 
-            if ($authId && $debounce) {
+            if (!$authId) {
+                return false;
+            }
+
+            if ($debounce) {
                 $cache = Cache::init();
                 $cacheKey = 'Alight_RouteMiddleware.debounce.' . md5(Request::method() . ' ' . Router::$setting['pattern']) . '.' . $authId;
                 if ($cache->has($cacheKey)) {
