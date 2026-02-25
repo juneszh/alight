@@ -29,22 +29,6 @@ class RouteMiddleware
     ];
 
     /**
-     * Get authorized user id
-     * 
-     * @param mixed $setId
-     * @return mixed 
-     */
-
-    public static function getAuthId($setId = null)
-    {
-        static $authId = null;
-        if ($setId !== null) {
-            $authId = $setId;
-        }
-        return $authId;
-    }
-
-    /**
      * Authorization verification
      * 
      * @param int $debounce $debounce set the interval seconds between 2 requests for each user
@@ -58,7 +42,7 @@ class RouteMiddleware
 
         if (Router::$setting['authHandler'] ?? []) {
             $authId = call_user_func_array(Router::$setting['authHandler'][0], Router::$setting['authHandler'][1]);
-            self::getAuthId($authId);
+            Router::getAuthId($authId);
 
             if (!$authId) {
                 return false;

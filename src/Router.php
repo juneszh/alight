@@ -175,6 +175,22 @@ class Router
     }
 
     /**
+     * Get authorized user id
+     * 
+     * @param mixed $setId
+     * @return mixed 
+     */
+
+    public static function getAuthId($setId = null)
+    {
+        static $authId = null;
+        if ($setId !== null) {
+            $authId = $setId;
+        }
+        return $authId;
+    }
+
+    /**
      * Clear route cache
      */
     public static function clearCache()
