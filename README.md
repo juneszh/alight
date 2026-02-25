@@ -72,7 +72,6 @@ return [
         'timezone' => 'Europe/Kiev',
         'storagePath' => 'storage',
         'domainLevel' => 2,
-        'corsDomain' => null,
         'corsHeaders' => null,
         'corsMethods' => null,
         'cacheAdapter' => null,
@@ -208,17 +207,6 @@ Alight\Route::setAnyMethods(['GET', 'POST']);
 Alight\Route::any('only/get/and/post', 'handler');
 ```
 
-#### Before handler
-If you want to run some common code before route's handler.
-```php
-// For example log every hit request
-Alight\Route::beforeHandler([svc\Request::class, 'log']);
-
-Alight\Route::get('test', 'handler');
-Alight\Route::post('test', 'handler');
-```
-
-
 
 #### Disable route caching
 Not recommended, but if your code requires: 
@@ -302,11 +290,10 @@ Alight\Route::post('user/status', 'handler')->auth()->cd(2);
 When your API needs to be used for Ajax requests by a third-party website (or your project has multiple domains), you need to send a set of CORS headers. For specific reasons, please refer to: [Mozilla docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
 
 ```php
-// Domains in config will receive the common cors header
-Alight\Route::put('share/config', 'handler')->cors(); 
 
 // The specified domain will receive the common cors header
 Alight\Route::put('share/specified', 'handler')->cors('abc.com');
+Alight\Route::put('share/config', 'handler')->cors(['abc.com', 'def.com']); 
 
 // The specified domain will receive the specified cors header
 Alight\Route::put('share/specified2', 'handler')->cors('abc.com', 'Authorization', ['GET', 'POST']);
@@ -395,12 +382,12 @@ return [
     //     'memcached' => [
     //         'type' => 'memcached',
     //         'dsn' => 'memcached://localhost',
-    //         'options' => [],
+    //         'option' => [],
     //     ],
     //     'redis' => [
     //         'type' => 'redis',
     //         'dsn' => 'redis://localhost',
-    //         'options' => [],
+    //         'option' => [],
     //     ],
     // ]
 ];

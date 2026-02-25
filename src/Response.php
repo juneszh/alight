@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use ArrayObject;
-use Exception;
+use RuntimeException;
 
 class Response
 {
@@ -23,7 +22,7 @@ class Response
      * 
      * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
      */
-    public const HTTP_STATUS = [
+    private const HTTP_STATUS = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         102 => 'Processing',
@@ -89,15 +88,40 @@ class Response
         511 => 'Network Authentication Required',
     ];
 
-    /**
-     * Common cors headers
+    public static string $body = '';
+    public static int $lastModified = 0;
+
+    /** 
+     * Initializes 
      */
-    public const CORS_HEADERS = [
-        'Content-Type',
-        'Origin',
-        'X-Requested-With',
-        'Authorization',
-    ];
+    public static function init()
+    {
+        self::$body = '';
+        self::$lastModified = 0;
+    }
+
+    /** 
+     * Output body and lastModified
+     */
+    public static function emitter()
+    {
+        $notModified = false;
+
+        $lastModified = self::$lastModified ?: time();
+        $clientModified = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '');
+
+        if ($clientModified !== false && $clientModified >= $lastModified) {
+            $notModified = true;
+        }
+
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $lastModified) . ' GMT');
+
+        if ($notModified) {
+            http_response_code(304);
+        } elseif (!in_array(Request::method(), ['OPTIONS', 'HEAD'])) {
+            echo self::$body;
+        }
+    }
 
     /**
      * Api response template base json/jsonp format
@@ -106,9 +130,8 @@ class Response
      * @param null|string $message 
      * @param null|array $data
      * @param null|array $extraData
-     * @param string $charset 
      */
-    public static function api(int $error = 0, ?string $message = null, ?array $data = null, ?array $extraData = null, string $charset = 'utf-8')
+    public static function api(int $error = 0, ?string $message = null, ?array $data = null, ?array $extraData = null)
     {
         $status = isset(self::HTTP_STATUS[$error]) ? $error : 200;
         $json = [
@@ -130,31 +153,37 @@ class Response
 
         $jsonEncode = json_encode($json, JSON_UNESCAPED_UNICODE);
         if (Request::query('jsonp')) {
-            header('Content-Type: application/javascript; charset=' . $charset, true, $status);
-            echo Request::query('jsonp') . '(' . $jsonEncode . ')';
+            header('Content-Type: application/javascript; charset=utf-8', true, $status);
+            self::$body = Request::query('jsonp') . '(' . $jsonEncode . ')';
         } else {
-            header('Content-Type: application/json; charset=' . $charset, true, $status);
-            echo $jsonEncode;
+            header('Content-Type: application/json; charset=utf-8', true, $status);
+            self::$body = $jsonEncode;
         }
     }
 
     /**
-     * Error page
+     * Error response
      * 
-     * @param $status 
+     * @param int $status 
      * @param null|string $message 
+     * @param null|array $data
      */
-    public static function errorPage($status, ?string $message = null)
+    public static function error(int $status = 0, ?string $message = null, ?array $data = null)
     {
-        if (isset(self::HTTP_STATUS[$status])) {
-            http_response_code((int) $status);
-        }
-        
-        $errorPageHandler = Config::get('app', 'errorPageHandler');
-        if (is_callable($errorPageHandler)) {
-            call_user_func_array($errorPageHandler, [$status, $message]);
+        if (Request::isAjax()) {
+            Response::api($status, $message, $data);
         } else {
-            echo '<h1>', $status, ' ', ($message ?: self::HTTP_STATUS[$status] ?? ''), '</h1>';
+            if (!isset(self::HTTP_STATUS[$status])) {
+                $status = 200;
+            }
+            header('Content-Type: text/html; charset=utf-8', true, $status);
+
+            $errorPageHandler = Config::get('app', 'errorPageHandler');
+            if (is_callable($errorPageHandler)) {
+                call_user_func_array($errorPageHandler, [$status, $message, $data]);
+            } else {
+                self::$body = '<h1>' . $status . ' ' . ($message ?: self::HTTP_STATUS[$status] ?? '') . '</h1>';
+            }
         }
     }
 
@@ -168,135 +197,27 @@ class Response
     {
         $template = App::root($file);
         if (!file_exists($template)) {
-            throw new Exception("Template file not found: {$template}.");
+            throw new RuntimeException("Template file not found: {$template}.");
         }
+
+        header('Content-Type: text/html; charset=utf-8', true, 200);
 
         if ($data) {
             extract($data);
         }
-
+        ob_start();
         require $template;
+        self::$body = ob_get_clean();
     }
 
     /**
-     *  Sent a redirect header and exit
+     *  Sent a redirect header
      * 
      * @param string $url 
-     * @param int $code 
+     * @param int $status 
      */
-    public static function redirect(string $url, int $code = 303)
+    public static function redirect(string $url, int $status = 303)
     {
-        header('Location: ' . $url, true, $code);
-    }
-
-
-    /**
-     * Send a set of Cache-Control headers
-     * 
-     * @param int $maxAge 
-     * @param ?int $sMaxAge 
-     * @param array $options 
-     * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
-     * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
-     */
-    public static function cache(int $maxAge, ?int $sMaxAge = null, array $options = [])
-    {
-        if (!$maxAge && !$sMaxAge) {
-            $cacheControl = ['no-cache'];
-            header('Pragma: no-cache');
-        } else {
-            $cacheControl = ['max-age=' . $maxAge];
-            if ($maxAge === 0) {
-                $cacheControl[] = 'must-revalidate';
-            }
-            if ($sMaxAge !== null) {
-                $cacheControl[] = 's-maxage=' . $sMaxAge;
-                if ($sMaxAge === 0) {
-                    $cacheControl[] = 'proxy-revalidate';
-                }
-            }
-            header_remove('Pragma');
-        }
-        if ($options) {
-            $cacheControl = array_unique(array_merge($cacheControl, $options));
-        }
-        header('Cache-Control: ' . join(', ', $cacheControl));
-    }
-
-    /**
-     * Send a set of CORS headers
-     * 
-     * @param null|string|array $allowOrigin 
-     * @param null|array $allowHeaders 
-     * @param null|array $allowMethods 
-     * @return bool 
-     */
-    public static function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null)
-    {
-        $cors = false;
-
-        $origin = Request::origin();
-        if ($allowOrigin && $origin) {
-            $originHost = parse_url($origin)['host'] ?? '';
-            $host = Request::host();
-            if ($originHost && $originHost !== $host) {
-                if ($allowOrigin === 'default') {
-                    $allowOrigin = Config::get('app', 'corsDomain');
-                }
-
-                if (is_array($allowOrigin)) {
-                    foreach ($allowOrigin as $domain) {
-                        if ($domain && substr($originHost, -strlen($domain)) === $domain) {
-                            $allowOrigin = $origin;
-                            break;
-                        }
-                    }
-                } elseif ($allowOrigin === '*') {
-                    $allowOrigin = '*';
-                } elseif ($allowOrigin === 'origin') {
-                    $allowOrigin = $origin;
-                } elseif ($allowOrigin && substr($originHost, -strlen($allowOrigin)) === $allowOrigin) {
-                    $allowOrigin = $origin;
-                } else {
-                    $allowOrigin = null;
-                }
-
-                if (is_string($allowOrigin)) {
-                    $cors = true;
-                    header('Access-Control-Allow-Origin: ' . $allowOrigin);
-                    header('Access-Control-Allow-Credentials: true');
-                    header('Vary: Origin');
-
-                    if (Request::method() === 'OPTIONS') {
-                        $allowHeaders = $allowHeaders ?: (Config::get('app', 'corsHeaders') ?: self::CORS_HEADERS);
-                        $allowMethods = $allowMethods ?: (Config::get('app', 'corsMethods') ?: Request::ALLOW_METHODS);
-                        header('Access-Control-Allow-Headers: ' . join(', ', $allowHeaders));
-                        header('Access-Control-Allow-Methods: ' . join(', ', $allowMethods));
-                        header('Access-Control-Max-Age: 86400');
-                        self::cache(0);
-                    }
-                }
-            }
-        }
-
-        return $cors;
-    }
-
-    /**
-     * Send a ETag header
-     * @param string $etag 
-     */
-    public static function eTag(string $etag = '')
-    {
-        header('ETag: ' . ($etag ?: Utility::randomHex()));
-    }
-
-    /**
-     * Send a Last-Modified header
-     * @param null|int $timestamp 
-     */
-    public static function lastModified(?int $timestamp = null)
-    {
-        header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $timestamp === null  ? time() : $timestamp) . ' GMT');
+        header('Location: ' . $url, true, $status);
     }
 }

@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Exception;
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
+use RuntimeException;
 use Throwable;
 
 class Log
@@ -42,7 +42,7 @@ class Log
         if (!isset(self::$instance[$logName]) || !(self::$instance[$logName] instanceof Logger)) {
             $configPath = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/log';
             if (!is_dir($configPath) && !@mkdir($configPath, 0777, true)) {
-                throw new Exception('Failed to create log directory.');
+                throw new RuntimeException('Failed to create log directory.');
             }
 
             self::$instance[$logName] = new Logger($logName);

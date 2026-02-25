@@ -13,11 +13,10 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Exception;
 use FastRoute;
 use FastRoute\RouteCollector;
 use FastRoute\Dispatcher;
-use voku\helper\HtmlMin;
+use RuntimeException;
 
 class Router
 {
@@ -27,88 +26,50 @@ class Router
 
     private function __clone() {}
 
+    public static array $setting = [];
+
     /**
      * Router start
      */
     public static function start()
     {
-        if (Request::method() === 'OPTIONS') {
-            http_response_code(204);
-        }
+        self::$setting = [];
+        Response::init();
 
         $routeResult = self::dispatch(self::configFiles(), Request::method(), rtrim(Request::path(), '/'));
         if (!$routeResult || $routeResult[0] !== Dispatcher::FOUND) {
-            if (Request::method() === 'OPTIONS') {
-                if (!Response::cors('default')) {
-                    http_response_code(404);
-                }
-            } else if (Request::method() === 'HEAD') {
+            if (in_array(Request::method(), ['OPTIONS', 'HEAD'])) {
                 http_response_code(404);
-            } else if (Request::isAjax()) {
-                Response::api(404);
             } else {
-                Response::errorPage(404);
+                Response::error(404);
             }
         } else {
-            $routeData = $routeResult[1];
-            $routeArgs = $routeData['args'] ? $routeResult[2] + $routeData['args'] : $routeResult[2];
+            self::$setting = $routeResult[1];
+            self::$setting['args'] = $routeResult[1]['args'] ? $routeResult[2] + $routeResult[1]['args'] : $routeResult[2];
 
-            if (isset($routeData['minify'])) {
-                ob_start();
-                register_shutdown_function(function () {
-                    $htmlMin = new HtmlMin();
-                    $htmlMin->doRemoveOmittedQuotes(false);
-                    $htmlMin->doRemoveOmittedHtmlTags(false);
-                    echo $htmlMin->minify(ob_get_clean());
-                });
+            $queue = self::$setting['beforeGlobal'] ?? [];
+            if (self::$setting['before'] ?? []) {
+                $queue = array_merge($queue, self::$setting['before']);
+            }
+            $queue[] = [self::$setting['handler'], self::$setting['args']];
+            if (self::$setting['after'] ?? []) {
+                $queue = array_merge($queue, self::$setting['after']);
+            }
+            if (self::$setting['afterGlobal'] ?? []) {
+                $queue = array_merge($queue, self::$setting['afterGlobal']);
             }
 
-            Response::eTag();
-            Response::lastModified();
-            Response::cors('default');
-
-            if (isset($routeData['cache'])) {
-                Response::cache($routeData['cache'], $routeData['cacheS'] ?? null, $routeData['cacheOptions'] ?? []);
-            }
-
-            if (isset($routeData['beforeHandler'])) {
-                if (!is_callable($routeData['beforeHandler'][0])) {
-                    throw new Exception('Invalid beforeHandler specified.');
-                }
-                call_user_func_array($routeData['beforeHandler'][0], $routeData['beforeHandler'][1]);
-            }
-
-            if (isset($routeData['auth'])) {
-                if (!isset($routeData['cache'])) {
-                    Response::cache(0);
-                }
-
-                if ($routeData['authHandler'] ?? []) {
-                    if (!is_callable($routeData['authHandler'][0])) {
-                        throw new Exception('Invalid authHandler specified.');
-                    }
-                    $authId = call_user_func_array($routeData['authHandler'][0], $routeData['authHandler'][1]);
-                    self::getAuthId($authId);
-                } else {
-                    throw new Exception('Missing authHandler definition.');
-                }
-
-                if (isset($routeData['debounce'])) {
-                    self::debounce($routeData['pattern'], $routeData['debounce']);
+            foreach ($queue as $_hander) {
+                $_continue = call_user_func_array($_hander[0], $_hander[1]);
+                if ($_continue === false) {
+                    break;
                 }
             }
-
-            if (isset($routeData['cors'])) {
-                Response::cors($routeData['cors'][0], $routeData['cors'][1], $routeData['cors'][2]);
-            }
-
-            if (!is_callable($routeData['handler'])) {
-                throw new Exception('Invalid handler specified.');
-            }
-
-            call_user_func_array($routeData['handler'], $routeArgs);
         }
+
+        Response::emitter();
     }
+
 
     /**
      * Get the route configuration files
@@ -139,7 +100,7 @@ class Router
                 foreach ($_files as $_file) {
                     $_file = App::root($_file);
                     if (!is_file($_file)) {
-                        throw new Exception('Missing route file: ' . $_file . '.');
+                        throw new RuntimeException('Missing route file: ' . $_file . '.');
                     }
 
                     $routeFiles[] = $_file;
@@ -166,7 +127,7 @@ class Router
             foreach ($configFiles as $_configFile) {
                 $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_configFile, '.php') . '/' . filemtime($_configFile);
                 if (!is_dir($configStorage) && !@mkdir($configStorage, 0777, true)) {
-                    throw new Exception('Failed to create route directory.');
+                    throw new RuntimeException('Failed to create route directory.');
                 }
 
                 $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) use ($method, $_configFile, $configStorage) {
@@ -213,53 +174,15 @@ class Router
         return $result;
     }
 
-
-    /**
-     * Limit request interval
-     * 
-     * @param string $pattern 
-     * @param int $second 
-     */
-    private static function debounce(string $pattern, int $second)
-    {
-        $authId = self::getAuthId();
-        if ($authId) {
-            $cache = Cache::init();
-            $cacheKey = 'Alight_Router.debounce.' . md5(Request::method() . ' ' . $pattern) . '.' . $authId;
-            if ($cache->has($cacheKey)) {
-                Response::api(429);
-                exit;
-            } else {
-                $cache->set($cacheKey, 1, $second);
-            }
-        }
-    }
-
     /**
      * Clear route cache
      */
     public static function clearCache()
     {
         if (PHP_SAPI !== 'cli') {
-            throw new Exception('PHP-CLI required.');
+            throw new RuntimeException('PHP-CLI required.');
         }
 
         exec('rm -rf ' . App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/');
-    }
-
-    /**
-     * Get authorized user id
-     * 
-     * @param mixed $setId
-     * @return mixed 
-     */
-
-    public static function getAuthId($setId = null)
-    {
-        static $authId = null;
-        if ($setId !== null) {
-            $authId = $setId;
-        }
-        return $authId;
     }
 }

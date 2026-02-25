@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Exception;
+use RuntimeException;
 
 class Job
 {
@@ -49,7 +49,7 @@ class Job
         if ($jobs) {
             $lockPath = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/job';
             if (!is_dir($lockPath) && !@mkdir($lockPath, 0777, true)) {
-                throw new Exception('Failed to create job lock directory.');
+                throw new RuntimeException('Failed to create job lock directory.');
             }
 
             $logger = Log::init('job/scheduler');
@@ -134,7 +134,7 @@ class Job
         if ($configjob) {
             $file = App::root($configjob);
             if (!is_file($file)) {
-                throw new Exception('Missing job file: ' . $file . '.');
+                throw new RuntimeException('Missing job file: ' . $file . '.');
             }
             require $file;
         }

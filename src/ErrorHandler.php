@@ -30,20 +30,20 @@ class ErrorHandler
         if (Request::method()) {
             if (Config::get('app', 'debug')) {
                 if (Request::isAjax()) {
+                    $whoops->sendHttpCode(false);
                     $whoops->pushHandler(function ($exception, $inspector, $run) {
                         Response::api(500, null, Formatter::formatExceptionAsDataArray($inspector, false));
+                        Response::emitter();
                         return Handler::QUIT;
                     });
                 } else {
                     $whoops->pushHandler(new PrettyPageHandler);
                 }
             } else {
+                $whoops->sendHttpCode(false);
                 $whoops->pushHandler(function ($exception, $inspector, $run) {
-                    if (Request::isAjax()) {
-                        Response::api(500);
-                    } else {
-                        Response::errorPage(500);
-                    }
+                    Response::error(500);
+                    Response::emitter();
                     return Handler::QUIT;
                 });
             }

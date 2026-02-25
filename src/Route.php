@@ -20,7 +20,8 @@ class Route
     private static string $group = '';
     private static array $anyMethods = [];
     private static $authHandler;
-    private static $beforeHandler;
+    private static array $beforeHandlers = [];
+    private static array $afterHandlers = [];
     public static bool $disableCache = false;
 
     private function __construct() {}
@@ -40,7 +41,8 @@ class Route
         self::$group = '';
         self::$anyMethods = [];
         self::$authHandler = null;
-        self::$beforeHandler = null;
+        self::$beforeHandlers = [];
+        self::$afterHandlers = [];
         self::$disableCache = false;
     }
 
@@ -69,8 +71,12 @@ class Route
             $config['authHandler'] = self::$authHandler;
         }
 
-        if (self::$beforeHandler) {
-            $config['beforeHandler'] = self::$beforeHandler;
+        if (self::$beforeHandlers) {
+            $config['beforeGlobal'] = self::$beforeHandlers;
+        }
+
+        if (self::$afterHandlers) {
+            $config['afterGlobal'] = self::$afterHandlers;
         }
 
         self::$config[self::$index] = $config;
@@ -223,7 +229,18 @@ class Route
      */
     public static function beforeHandler($handler, array $args = [])
     {
-        self::$beforeHandler = [$handler, $args];
+        self::$beforeHandlers[] = [$handler, $args];
+    }
+
+    /**
+     * Call a handler after route handler be called
+     * 
+     * @param callable $handler 
+     * @param array $args 
+     */
+    public static function afterHandler($handler, array $args = [])
+    {
+        self::$afterHandlers[] = [$handler, $args];
     }
 
     /**

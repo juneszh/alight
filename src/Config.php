@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Exception;
+use RuntimeException;
 
 class Config
 {
@@ -25,7 +25,6 @@ class Config
             'timezone' => null, // Default timezone follows php.ini
             'storagePath' => 'storage', // The storage path of the files generated at runtime by framework
             'domainLevel' => 2, // Get subdomains for route. For example, set 3 to match 'a' when the domain is like 'a.b.co.jp'
-            'corsDomain' => null, // Set a default domain array for CORS, or follow 'origin' header when set 'origin'
             'corsHeaders' => null, // Set a default header array for CORS
             'corsMethods' => null, // Set a default header array for CORS
             'cacheAdapter' => null, // Extended cache adapter based on symfony/cache
@@ -102,7 +101,7 @@ class Config
     {
         $configFile = App::root(self::FILE);
         if (!file_exists($configFile)) {
-            throw new Exception('Missing configuration file: ' . self::FILE);
+            throw new RuntimeException('Missing configuration file: ' . self::FILE);
         }
 
         $userConfig = require $configFile;

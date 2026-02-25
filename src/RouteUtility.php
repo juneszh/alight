@@ -24,14 +24,38 @@ class RouteUtility
     }
 
     /**
-     * Enable authorization verification
      * 
+     * @param callable $handler 
+     * @param array $args 
      * @return RouteUtility 
      */
-    public function auth(): RouteUtility
+    public function before($handler, array $args = []): RouteUtility
     {
-        Route::$config[$this->index][__FUNCTION__] = true;
+        Route::$config[$this->index][__FUNCTION__][] = [$handler, $args];
         return $this;
+    }
+
+    /**
+     * 
+     * @param callable $handler 
+     * @param array $args 
+     * @return RouteUtility 
+     */
+    public function after($handler, array $args = []): RouteUtility
+    {
+        Route::$config[$this->index][__FUNCTION__][] = [$handler, $args];
+        return $this;
+    }
+
+    /**
+     * Enable authorization verification
+     * 
+     * @param int $debounce set the interval seconds between 2 requests for each user
+     * @return RouteUtility 
+     */
+    public function auth(int $debounce = 0): RouteUtility
+    {
+        return $this->before([RouteMiddleware::class, __FUNCTION__], [$debounce]);
     }
 
     /**
@@ -44,37 +68,21 @@ class RouteUtility
      */
     public function cache(int $maxAge, ?int $sMaxAge = null, array $options = []): RouteUtility
     {
-        Route::$config[$this->index][__FUNCTION__] = $maxAge;
-        Route::$config[$this->index][__FUNCTION__ . 'S'] = $sMaxAge;
-        Route::$config[$this->index][__FUNCTION__ . 'Options'] = $options;
-        return $this;
+        return $this->before([RouteMiddleware::class, __FUNCTION__], [$maxAge, $sMaxAge, $options]);
     }
 
     /**
      * Set CORS header for current method and 'OPTIONS'
      * 
-     * @param null|string|array $allowOrigin default|origin|*|{custom_origin}|[custom_origin1, custom_origin2] 
+     * @param null|string|array $allowOrigin origin|*|{custom_origin}|[custom_origin1, custom_origin2] 
      * @param null|array $allowHeaders 
      * @param null|array $allowMethods 
      * @return RouteUtility 
      */
-    public function cors($allowOrigin = 'default', ?array $allowHeaders = null, ?array $allowMethods = null): RouteUtility
+    public function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null): RouteUtility
     {
-        Route::$config[$this->index][__FUNCTION__] = [$allowOrigin, $allowHeaders, $allowMethods];
-        Route::options(Route::$config[$this->index]['pattern'], [Response::class, 'cors'], ['allowOrigin' => $allowOrigin, 'allowHeaders' => $allowHeaders, 'allowMethods' => $allowMethods]);
-        return $this;
-    }
-
-    /**
-     * Set the interval between 2 requests for each user (authorization required)
-     * 
-     * @param int $second 
-     * @return RouteUtility 
-     */
-    public function debounce(int $second): RouteUtility
-    {
-        Route::$config[$this->index][__FUNCTION__] = $second;
-        return $this;
+        Route::options(Route::$config[$this->index]['pattern'], [Response::class, 'cors'], [$allowOrigin, $allowHeaders, $allowMethods]);
+        return $this->before([RouteMiddleware::class, __FUNCTION__], [$allowOrigin, $allowHeaders, $allowMethods]);
     }
 
     /**
@@ -84,7 +92,6 @@ class RouteUtility
      */
     public function minify(): RouteUtility
     {
-        Route::$config[$this->index][__FUNCTION__] = true;
-        return $this;
+        return $this->after([RouteMiddleware::class, __FUNCTION__]);
     }
 }

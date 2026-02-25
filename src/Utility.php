@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Exception;
+use LogicException;
 
 class Utility
 {
@@ -26,7 +26,7 @@ class Utility
     public static function randomHex(int $length = 32): string
     {
         if ($length % 2 !== 0) {
-            throw new Exception('length must be even.');
+            throw new LogicException('length must be even.');
         }
         return bin2hex(random_bytes($length / 2));
     }
@@ -40,7 +40,7 @@ class Utility
     public static function uniqueNumber(int $length = 16): string
     {
         if ($length < 16) {
-            throw new Exception('Length must be greater than 15.');
+            throw new LogicException('Length must be greater than 15.');
         }
         $dateTime = date('ymdHis');
         $microTime = substr((string) floor(microtime(true) * 1000), -3);

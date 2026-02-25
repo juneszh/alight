@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Exception;
+use LogicException;
 use Memcached;
 use Redis;
 use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
@@ -95,7 +95,7 @@ class Cache
                 } else {
                     $customCacheAdapter = Config::get('app', 'cacheAdapter');
                     if (!is_callable($customCacheAdapter)) {
-                        throw new Exception('Invalid cacheAdapter specified.');
+                        throw new LogicException('Invalid cacheAdapter specified.');
                     }
                     $psr6Cache = new TagAwareAdapter(call_user_func($customCacheAdapter, $config));
                 }
@@ -121,7 +121,7 @@ class Cache
         } else {
             $config = self::getConfig($configKey);
             if ($config['type'] !== 'memcached') {
-                throw new Exception('Incorrect type in cache configuration \'' . $configKey . '\'.');
+                throw new LogicException('Incorrect type in cache configuration \'' . $configKey . '\'.');
             }
             $client = MemcachedAdapter::createConnection($config['dsn'], $config['option']);
             self::$instance[$configKey]['client'] = $client;
@@ -142,7 +142,7 @@ class Cache
         } else {
             $config = self::getConfig($configKey);
             if ($config['type'] !== 'redis') {
-                throw new Exception('Incorrect type in cache configuration \'' . $configKey . '\'.');
+                throw new LogicException('Incorrect type in cache configuration \'' . $configKey . '\'.');
             }
             $client = RedisAdapter::createConnection($config['dsn'], $config['option']);
             self::$instance[$configKey]['client'] = $client;
@@ -160,7 +160,7 @@ class Cache
     {
         $config = Config::get('cache');
         if (!$config || !is_array($config)) {
-            throw new Exception('Missing cache configuration.');
+            throw new LogicException('Missing cache configuration.');
         }
 
         if (isset($config['type']) && !is_array($config['type'])) {
@@ -168,12 +168,12 @@ class Cache
         } else {
             if ($configKey) {
                 if (!isset($config[$configKey]) || !is_array($config[$configKey])) {
-                    throw new Exception('Missing cache configuration about \'' . $configKey . '\'.');
+                    throw new LogicException('Missing cache configuration about \'' . $configKey . '\'.');
                 }
             } else {
                 $configKey = key($config);
                 if (!is_array($config[$configKey])) {
-                    throw new Exception('Missing cache configuration.');
+                    throw new LogicException('Missing cache configuration.');
                 }
             }
             $configCache = $config[$configKey];

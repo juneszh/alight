@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Alight;
 
-use Exception;
+use LogicException;
 use Medoo\Medoo;
 use PDO;
 
@@ -63,7 +63,7 @@ class Database
     {
         $config = Config::get('database');
         if (!$config || !is_array($config)) {
-            throw new Exception('Missing database configuration.');
+            throw new LogicException('Missing database configuration.');
         }
 
         if (isset($config['type']) && !is_array($config['type'])) {
@@ -71,12 +71,12 @@ class Database
         } else {
             if ($configKey) {
                 if (!isset($config[$configKey]) || !is_array($config[$configKey])) {
-                    throw new Exception('Missing database configuration about \'' . $configKey . '\'.');
+                    throw new LogicException('Missing database configuration about \'' . $configKey . '\'.');
                 }
             } else {
                 $configKey = key($config);
                 if (!is_array($config[$configKey])) {
-                    throw new Exception('Missing database configuration.');
+                    throw new LogicException('Missing database configuration.');
                 }
             }
             $configDatabase = $config[$configKey];
