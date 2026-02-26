@@ -47,21 +47,23 @@ class Router
             self::$setting = $routeResult[1];
             self::$setting['args'] = $routeResult[1]['args'] ? $routeResult[2] + $routeResult[1]['args'] : $routeResult[2];
 
-            $queue = self::$setting['beforeGlobal'] ?? [];
-            if (self::$setting['before'] ?? []) {
-                $queue = array_merge($queue, self::$setting['before']);
-            }
-            $queue[] = [self::$setting['handler'], self::$setting['args']];
-            if (self::$setting['after'] ?? []) {
-                $queue = array_merge($queue, self::$setting['after']);
-            }
-            if (self::$setting['afterGlobal'] ?? []) {
-                $queue = array_merge($queue, self::$setting['afterGlobal']);
-            }
-
+            $queue = array_merge(
+                self::$setting['beforeGlobal'] ?? [],
+                self::$setting['before'] ?? [],
+                [[self::$setting['handler'], self::$setting['args']]],
+                self::$setting['after'] ?? [],
+                self::$setting['afterGlobal'] ?? []
+            );
             foreach ($queue as $_hander) {
-                $_continue = call_user_func_array($_hander[0], $_hander[1]);
-                if ($_continue === false) {
+                try {
+                    call_user_func_array($_hander[0], $_hander[1]);
+                } catch (ResponseException $e) {
+                    if ($e->getBody() !== null) {
+                        http_response_code($e->getStatus());
+                        Response::$body = $e->getBody();
+                    } else {
+                        Response::error($e->getStatus());
+                    }
                     break;
                 }
             }

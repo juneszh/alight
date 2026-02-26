@@ -55,7 +55,7 @@ class RouteUtility
      */
     public function auth(int $debounce = 0): RouteUtility
     {
-        return $this->before([RouteMiddleware::class, __FUNCTION__], [$debounce]);
+        return $this->before([Response::class, 'auth'], [$debounce]);
     }
 
     /**
@@ -68,7 +68,7 @@ class RouteUtility
      */
     public function cache(int $maxAge, ?int $sMaxAge = null, array $options = []): RouteUtility
     {
-        return $this->before([RouteMiddleware::class, __FUNCTION__], [$maxAge, $sMaxAge, $options]);
+        return $this->before([Response::class, 'cache'], [$maxAge, $sMaxAge, $options]);
     }
 
     /**
@@ -82,7 +82,7 @@ class RouteUtility
     public function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null): RouteUtility
     {
         Route::options(Route::$config[$this->index]['pattern'], [Response::class, 'cors'], [$allowOrigin, $allowHeaders, $allowMethods]);
-        return $this->before([RouteMiddleware::class, __FUNCTION__], [$allowOrigin, $allowHeaders, $allowMethods]);
+        return $this->before([Response::class, 'cors'], [$allowOrigin, $allowHeaders, $allowMethods]);
     }
 
     /**
@@ -92,6 +92,6 @@ class RouteUtility
      */
     public function minify(): RouteUtility
     {
-        return $this->after([RouteMiddleware::class, __FUNCTION__]);
+        return $this->after([Response::class, 'minify']);
     }
 }
