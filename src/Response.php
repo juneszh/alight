@@ -162,7 +162,29 @@ class Response
     }
 
     /**
-     * Error response
+     * Error page
+     * 
+     * @param int $status 
+     * @param null|string $message 
+     * @param null|array $data
+     */
+    public static function errorPage(int $status = 0, ?string $message = null, ?array $data = null)
+    {
+        if (!isset(self::HTTP_STATUS[$status])) {
+            $status = 200;
+        }
+        header('Content-Type: text/html; charset=utf-8', true, $status);
+
+        $errorPageHandler = Config::get('app', 'errorPageHandler');
+        if (is_callable($errorPageHandler)) {
+            call_user_func_array($errorPageHandler, [$status, $message, $data]);
+        } else {
+            self::$body = '<h1>' . $status . ' ' . ($message ?: self::HTTP_STATUS[$status] ?? '') . '</h1>';
+        }
+    }
+
+    /**
+     * Auto detect request type and output error api or page
      * 
      * @param int $status 
      * @param null|string $message 
@@ -173,17 +195,7 @@ class Response
         if (Request::isAjax()) {
             Response::api($status, $message, $data);
         } else {
-            if (!isset(self::HTTP_STATUS[$status])) {
-                $status = 200;
-            }
-            header('Content-Type: text/html; charset=utf-8', true, $status);
-
-            $errorPageHandler = Config::get('app', 'errorPageHandler');
-            if (is_callable($errorPageHandler)) {
-                call_user_func_array($errorPageHandler, [$status, $message, $data]);
-            } else {
-                self::$body = '<h1>' . $status . ' ' . ($message ?: self::HTTP_STATUS[$status] ?? '') . '</h1>';
-            }
+            Response::errorPage($status, $message, $data);
         }
     }
 
