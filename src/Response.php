@@ -117,20 +117,10 @@ class Response
      */
     public static function emitter()
     {
-        $notModified = false;
-
         $lastModified = self::$lastModified ?: time();
-        $clientModified = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? '');
-
-        if ($clientModified !== false && $clientModified >= $lastModified) {
-            $notModified = true;
-        }
-
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $lastModified) . ' GMT');
 
-        if ($notModified) {
-            http_response_code(304);
-        } elseif (!in_array(Request::method(), ['OPTIONS', 'HEAD'])) {
+        if (!in_array(Request::method(), ['OPTIONS', 'HEAD'])) {
             echo self::$body;
         }
     }
