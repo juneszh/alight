@@ -62,7 +62,7 @@ class Router
                         http_response_code($e->getStatus());
                         Response::$body = $e->getBody();
                     } else {
-                        Response::error($e->getStatus());
+                        Response::error($e->getStatus(), $e->getMessage() ?: null);
                     }
                     break;
                 }
