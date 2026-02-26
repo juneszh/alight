@@ -59,7 +59,11 @@ class Router
                     call_user_func_array($_hander[0], $_hander[1]);
                 } catch (ResponseException $e) {
                     if ($e->getBody() !== null) {
-                        http_response_code($e->getStatus());
+                        $status = $e->getStatus();
+                        if (!isset(Response::HTTP_STATUS[$status])) {
+                            $status = 200;
+                        }
+                        http_response_code($status);
                         Response::$body = $e->getBody();
                     } else {
                         Response::error($e->getStatus(), $e->getMessage() ?: null);

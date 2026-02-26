@@ -24,7 +24,7 @@ class Response
      * 
      * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
      */
-    private const HTTP_STATUS = [
+    public const HTTP_STATUS = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         102 => 'Processing',
