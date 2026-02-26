@@ -219,20 +219,30 @@ class Response
      */
     public static function render(string $file, array $data = [])
     {
+        header('Content-Type: text/html; charset=utf-8', true);
+
+        ob_start();
+        self::template($file, $data);
+        self::$body = ob_get_clean();
+    }
+
+    /**
+     * build template data
+     * 
+     * @param string $file 
+     * @param array $data 
+     */
+    public static function template(string $file, array $data = [])
+    {
         $template = App::root($file);
         if (!file_exists($template)) {
             throw new RuntimeException("Template file not found: {$template}.");
         }
 
-
-        header('Content-Type: text/html; charset=utf-8', true);
-
-        ob_start();
         if ($data) {
             extract($data);
         }
         require $template;
-        self::$body = ob_get_clean();
     }
 
     /**
