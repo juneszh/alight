@@ -261,7 +261,7 @@ class Response
         if (Router::$setting['authHandler'] ?? []) {
             $authId = call_user_func_array(Router::$setting['authHandler'][0], Router::$setting['authHandler'][1]);
             if (!$authId) {
-                throw new ResponseException(403);
+                throw new ResponseException(401);
             }
             Router::getAuthId($authId);
 
