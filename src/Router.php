@@ -58,13 +58,16 @@ class Router
                 try {
                     call_user_func_array($_hander[0], $_hander[1]);
                 } catch (ResponseException $e) {
+                    $code = $e->getStatusCode();
+                    $status = isset(Response::HTTP_STATUS[$code]) ? $code : 200;
                     if ($e->getBody() !== null) {
-                        $code = $e->getStatusCode();
-                        $status = isset(Response::HTTP_STATUS[$code]) ? $code : 200;
                         http_response_code($status);
                         Response::$body = $e->getBody();
+                    } elseif (in_array($status, [300, 301, 302, 303, 307, 308])) {
+                        Response::redirect($e->getBody(), $status);
+                        Response::$body = '';
                     } else {
-                        Response::error($e->getStatusCode(), $e->getMessage() ?: null);
+                        Response::error($code, $e->getMessage() ?: null);
                     }
                     break;
                 }
