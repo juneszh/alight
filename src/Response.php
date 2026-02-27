@@ -128,16 +128,16 @@ class Response
     /**
      * Api response template base json/jsonp format
      * 
-     * @param int $error 
+     * @param int $code 
      * @param null|string $message 
      * @param null|array $data
      * @param null|array $extraData
      */
-    public static function api(int $error = 0, ?string $message = null, ?array $data = null, ?array $extraData = null)
+    public static function api(int $code = 0, ?string $message = null, ?array $data = null, ?array $extraData = null)
     {
-        $status = isset(self::HTTP_STATUS[$error]) ? $error : 200;
+        $status = isset(self::HTTP_STATUS[$code]) ? $code : 200;
         $json = [
-            'error' => $error,
+            'error' => $code,
             'message' => self::HTTP_STATUS[$status] ?? ''
         ];
 
@@ -166,22 +166,20 @@ class Response
     /**
      * Error page
      * 
-     * @param int $status 
+     * @param mixed $code 
      * @param null|string $message 
      * @param null|array $data
      */
-    public static function errorPage(int $status = 0, ?string $message = null, ?array $data = null)
+    public static function errorPage($code, ?string $message = null, ?array $data = null)
     {
-        if (!isset(self::HTTP_STATUS[$status])) {
-            $status = 200;
-        }
+        $status = isset(self::HTTP_STATUS[$code]) ? $code : 200;
         header('Content-Type: text/html; charset=utf-8', true, $status);
 
         $errorPageHandler = Config::get('app', 'errorPageHandler');
         if (is_callable($errorPageHandler)) {
-            call_user_func_array($errorPageHandler, [$status, $message, $data]);
+            call_user_func_array($errorPageHandler, [$code, $message, $data]);
         } else {
-            self::$body = '<h1>' . $status . ' ' . ($message ?: self::HTTP_STATUS[$status] ?? '') . '</h1>';
+            self::$body = '<h1>' . $code . ' ' . ($message ?: self::HTTP_STATUS[$status] ?? '') . '</h1>';
         }
     }
 
