@@ -128,12 +128,12 @@ class Response
     /**
      * Api response template base json/jsonp format
      * 
-     * @param int $code 
+     * @param mixed $code 
      * @param null|string $message 
      * @param null|array $data
      * @param null|array $extraData
      */
-    public static function api(int $code = 0, ?string $message = null, ?array $data = null, ?array $extraData = null)
+    public static function api($code, ?string $message = null, ?array $data = null, ?array $extraData = null)
     {
         $status = isset(self::HTTP_STATUS[$code]) ? $code : 200;
         $json = [
@@ -186,16 +186,16 @@ class Response
     /**
      * Auto detect request type and output error api or page
      * 
-     * @param int $status 
+     * @param mixed $code
      * @param null|string $message 
      * @param null|array $data
      */
-    public static function error(int $status = 0, ?string $message = null, ?array $data = null)
+    public static function error(int $code, ?string $message = null, ?array $data = null)
     {
         if (Request::isAjax()) {
-            Response::api($status, $message, $data);
+            Response::api($code, $message, $data);
         } else {
-            Response::errorPage($status, $message, $data);
+            Response::errorPage($code, $message, $data);
         }
     }
 

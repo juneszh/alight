@@ -18,20 +18,20 @@ use Throwable;
 
 class ResponseException extends RuntimeException
 {
-    protected int $status;
+    protected $statusCode;
     protected ?string $body;
 
-    public function __construct(int $status = 500, string $message = '', ?string $body = null, ?Throwable $previous = null)
+    public function __construct($code, string $message = '', ?string $body = null, ?Throwable $previous = null)
     {
         parent::__construct($message, 0, $previous);
 
-        $this->status = $status;
+        $this->statusCode = $code;
         $this->body = $body;
     }
 
-    public function getStatus(): int
+    public function getStatusCode()
     {
-        return $this->status;
+        return $this->statusCode;
     }
 
     public function getBody(): ?string
