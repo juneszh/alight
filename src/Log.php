@@ -62,7 +62,7 @@ class Log
         $logger = self::init('error/alight');
         $trace = $t->getTrace();
         if (isset($_SERVER['REQUEST_URI'])) {
-            array_unshift($trace, ['uri' => $_SERVER['REQUEST_URI']]);
+            array_unshift($trace, ['host' => $_SERVER['HTTP_HOST'] ?? '', 'uri' => $_SERVER['REQUEST_URI']]);
         }
         $logger->error($t->getMessage(), $trace);
     }
