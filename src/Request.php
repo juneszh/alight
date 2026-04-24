@@ -226,12 +226,27 @@ class Request
      */
     public static function isJson(): bool
     {
-        static $json = null;
-        if ($json === null) {
-            $json = isset($_SERVER['CONTENT_TYPE']) && (strpos($_SERVER['CONTENT_TYPE'], 'application/json') !== false);
+        static $isJson = null;
+        if ($isJson === null) {
+            $isJson = isset($_SERVER['CONTENT_TYPE']) && (strpos(strtolower($_SERVER['CONTENT_TYPE']), 'application/json') !== false);
         }
 
-        return $json;
+        return $isJson;
+    }
+
+    /**
+     * Checks if HTTP_ACCEPT contains json
+     *
+     * @return bool
+     */
+    public static function acceptJson(): bool
+    {
+        static $acceptJson = null;
+        if ($acceptJson === null) {
+            $acceptJson = isset($_SERVER['HTTP_ACCEPT']) && (strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'application/json') !== false);
+        }
+
+        return $acceptJson;
     }
 
     /**

@@ -1,5 +1,5 @@
 # Alight
-Alight is a light-weight PHP framework. Easily and quickly build high performance RESTful web applications. Out-of-the-box built-in routing, database, caching, error handling, logging and job scheduling libraries. Focus on creating solutions for the core process of web applications. Keep simple and extensible.
+Alight is a lightweight PHP framework that makes it easy to build high-performance RESTful web applications. It comes with built-in routing, database, caching, error handling, logging, and job scheduling. Alight focuses on the core requirements of web applications—simple by default, and extensible when you need to customize.
 
 ## Alight Family
 
@@ -69,7 +69,7 @@ File: config/app.php
 return [
     'app' => [
         'debug' => false,
-        'timezone' => 'Europe/Kiev',
+        'timezone' => 'Europe/Kyiv',
         'storagePath' => 'storage',
         'domainLevel' => 2,
         'corsHeaders' => null,
@@ -105,7 +105,7 @@ Alight\Config::get('app', 'storagePath');
 See [Config.php](./src/Config.php) for details.
 
 ## Routing
-Before learning routing rules, you need to create a php file first that stores routing rules. Because the routing cache is updated or not, it is based on the modification time of the routing file. For example:
+Before learning routing rules, you need to create a PHP file that stores them. The routing cache is refreshed based on the modification time of the routing file. For example:
 
 File: config/route/web.php
 ```php
@@ -414,7 +414,7 @@ $cache->delete('test');
 ```php
 $cache6 = \Alight\Cache::psr6('memcached');
 $cacheItem = $cache6->getItem('test');
-if (!$cacheItem->isHit()){
+if (!$cacheItem->isHit()) {
     $cacheItem->expiresAfter(3600);
     $cacheItem->set('hello world!');
     // Bind to a tag
@@ -423,10 +423,9 @@ if (!$cacheItem->isHit()){
 $cacheData = $cacheItem->get();
 $cache6->deleteItem('test');
 // Delete all cached items in the same tag
-$cache6->invalidateTags('alight')
-
+$cache6->invalidateTags('alight');
 // Or symfony/cache adapter style
-$cacheData = $cache6->get('test', function ($item){
+$cacheData = $cache6->get('test', function ($item) {
     $item->expiresAfter(3600);
     return 'hello world!';
 });
@@ -567,12 +566,13 @@ class Error
 
 ## Job Scheduling
 
-If you need to run php scripts in the background periodically.
+If you need to run PHP scripts in the background periodically.
+
 ### Step 1: Setting Up CRON
 ```bash
-$ sudo contab -e
+$ sudo crontab -e
 ```
-Add the following to the end line:
+Add the following line to the end of the crontab:
 ```bash
 * * * * * sudo -u www-data /usr/bin/php /var/www/{PROJECT_DIRECTORY}/app/scheduler.php >> /dev/null 2>&1
 ```
@@ -675,7 +675,7 @@ For example:
 
 
 ### Views
-Alight provides `Alight\Response::render()` to display a view template call the render method with the path of the template file and optional template data:
+Alight provides `Alight\Response::render()` to render a view template. Call `render` with the template file path and optional template data.
 
 File: app/controller/Pages.php
 ```php

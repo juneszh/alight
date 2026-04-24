@@ -29,7 +29,7 @@ class ErrorHandler
 
         if (Request::method()) {
             if (Config::get('app', 'debug')) {
-                if (Request::isAjax()) {
+                if (Request::isAjax() || Request::acceptJson()) {
                     $whoops->sendHttpCode(false);
                     $whoops->pushHandler(function ($exception, $inspector, $run) {
                         Response::api(500, null, Formatter::formatExceptionAsDataArray($inspector, false));

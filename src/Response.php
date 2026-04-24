@@ -192,7 +192,7 @@ class Response
      */
     public static function error(int $code, ?string $message = null, ?array $data = null)
     {
-        if (Request::isAjax()) {
+        if (Request::isAjax() || Request::acceptJson()) {
             Response::api($code, $message, $data);
         } else {
             Response::errorPage($code, $message, $data);
