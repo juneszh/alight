@@ -42,11 +42,6 @@
         "filp/whoops": "^2.18",
         "voku/html-min": "^5.0"
     },
-    "config": {
-        "platform": {
-            "php": "8.3.0"
-        }
-    },
     "require-dev": {
         "phpunit/phpunit": "^12.5",
         "phpstan/phpstan": "^2.1"
