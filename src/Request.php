@@ -15,18 +15,12 @@ namespace Alight;
 
 class Request
 {
-    public const ALLOW_METHODS = ['OPTIONS', 'HEAD', 'GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
+    public const array ALLOW_METHODS = ['OPTIONS', 'HEAD', 'GET', 'POST', 'DELETE', 'PUT', 'PATCH'];
 
     /**
      * Property getter
-     * 
-     * @param string $property 
-     * @param string $key 
-     * @param mixed $default  
-     * @param mixed $set 
-     * @return mixed 
      */
-    private static function getter(array &$property, string $key, $default, $set = null)
+    private static function getter(array &$property, string $key, mixed $default, mixed $set = null): mixed
     {
         if ($key) {
             if ($set !== null) {
@@ -34,20 +28,14 @@ class Request
             }
 
             if (isset($property[$key])) {
-                switch (gettype($default)) {
-                    case 'boolean':
-                        return (bool) $property[$key];
-                    case 'integer':
-                        return (int) $property[$key];
-                    case 'double':
-                        return (float) $property[$key];
-                    case 'string':
-                        return (string) $property[$key];
-                    case 'array':
-                        return (array) $property[$key];
-                    default:
-                        return $property[$key];
-                }
+                return match (gettype($default)) {
+                    'boolean' => (bool) $property[$key],
+                    'integer' => (int) $property[$key],
+                    'double' => (float) $property[$key],
+                    'string' => (string) $property[$key],
+                    'array' => (array) $property[$key],
+                    default => $property[$key],
+                };
             } else {
                 return $default;
             }
@@ -58,42 +46,32 @@ class Request
 
     /**
      * Get HTTP header value, or $default if unset
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function header(string $key = '', $default = null, $set = null)
+    public static function header(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         static $header = null;
         if ($header === null) {
             $header = apache_request_headers() ?: [];
         }
+
         return self::getter($header, $key, $default, $set);
     }
 
     /**
      * Get $_GET value, or $default if unset
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function query(string $key = '', $default = null, $set = null)
+    public static function query(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         static $query = null;
         if ($query === null) {
             $query = $_GET ?: [];
         }
+
         return self::getter($query, $key, $default, $set);
     }
 
     /**
      * Get the request body
-     * 
-     * @return string 
      */
     public static function body(): string
     {
@@ -107,107 +85,79 @@ class Request
 
     /**
      * Get $_POST value (including json body), or $default if unset
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function data(string $key = '', $default = null, $set = null)
+    public static function data(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         static $data = null;
         if ($data === null) {
             $data = $_POST ?: [];
-            if (in_array(self::method(), ['POST', 'PUT', 'DELETE', 'PATCH']) && self::isJson()) {
+            if (in_array(self::method(), ['POST', 'PUT', 'DELETE', 'PATCH'], true) && self::isJson()) {
                 if (Utility::isJson(self::body())) {
                     $data = json_decode(self::body(), true);
                 }
             }
         }
+
         return self::getter($data, $key, $default, $set);
     }
 
     /**
      * Alias for query()
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function get(string $key = '', $default = null, $set = null)
+    public static function get(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         return self::query($key, $default, $set);
     }
 
     /**
      * Alias for data()
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function post(string $key = '', $default = null, $set = null)
+    public static function post(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         return self::data($key, $default, $set);
     }
 
     /**
      * Simulate $_REQUEST, contains the contents of query(), data()
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function request(string $key = '', $default = null, $set = null)
+    public static function request(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         static $request = null;
         if ($request === null) {
             $request = array_replace_recursive(self::query(), self::data());
         }
+
         return self::getter($request, $key, $default, $set);
     }
 
     /**
      * Get $_COOKIE value, or $default if unset
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function cookie(string $key = '', $default = null, $set = null)
+    public static function cookie(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         static $cookie = null;
         if ($cookie === null) {
             $cookie = $_COOKIE ?: [];
         }
+
         return self::getter($cookie, $key, $default, $set);
     }
 
     /**
      * Get $_FILES value, or $default if unset
-     * 
-     * @param string $key 
-     * @param mixed $default 
-     * @param mixed $set 
-     * @return mixed 
      */
-    public static function file(string $key = '', $default = null, $set = null)
+    public static function file(string $key = '', mixed $default = null, mixed $set = null): mixed
     {
         static $file = null;
         if ($file === null) {
             $file = $_FILES ?: [];
         }
+
         return self::getter($file, $key, $default, $set);
     }
 
     /**
      * Checks if it's an ajax request
-     *
-     * @return bool
      */
     public static function isAjax(): bool
     {
@@ -221,14 +171,12 @@ class Request
 
     /**
      * Checks if it's an json request
-     *
-     * @return bool
      */
     public static function isJson(): bool
     {
         static $isJson = null;
         if ($isJson === null) {
-            $isJson = isset($_SERVER['CONTENT_TYPE']) && (strpos(strtolower($_SERVER['CONTENT_TYPE']), 'application/json') !== false);
+            $isJson = isset($_SERVER['CONTENT_TYPE']) && (str_contains(strtolower($_SERVER['CONTENT_TYPE']), 'application/json'));
         }
 
         return $isJson;
@@ -236,14 +184,12 @@ class Request
 
     /**
      * Checks if HTTP_ACCEPT contains json
-     *
-     * @return bool
      */
     public static function acceptJson(): bool
     {
         static $acceptJson = null;
         if ($acceptJson === null) {
-            $acceptJson = isset($_SERVER['HTTP_ACCEPT']) && (strpos(strtolower($_SERVER['HTTP_ACCEPT']), 'application/json') !== false);
+            $acceptJson = isset($_SERVER['HTTP_ACCEPT']) && (str_contains(strtolower($_SERVER['HTTP_ACCEPT']), 'application/json'));
         }
 
         return $acceptJson;
@@ -251,8 +197,6 @@ class Request
 
     /**
      * Get the client IP (compatible proxy)
-     * 
-     * @return string
      */
     public static function ip(): string
     {
@@ -267,8 +211,6 @@ class Request
 
     /**
      * Get the User-Agent
-     * 
-     * @return string 
      */
     public static function userAgent(): string
     {
@@ -277,8 +219,6 @@ class Request
 
     /**
      * Get the Referrer
-     * 
-     * @return string 
      */
     public static function referrer(): string
     {
@@ -287,8 +227,6 @@ class Request
 
     /**
      * Get the request method
-     * 
-     * @return string 
      */
     public static function method(): string
     {
@@ -297,9 +235,9 @@ class Request
             if (isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
                 $method = strtoupper($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']);
             } elseif (Request::data('_method')) {
-                $method = strtoupper(Request::data('_method'));
+                $method = strtoupper((string) Request::data('_method'));
             } elseif (Request::query('_method')) {
-                $method = strtoupper(Request::query('_method'));
+                $method = strtoupper((string) Request::query('_method'));
             } else {
                 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? '');
             }
@@ -310,8 +248,6 @@ class Request
 
     /**
      * Get the request scheme
-     * 
-     * @return string 
      */
     public static function scheme(): string
     {
@@ -337,8 +273,6 @@ class Request
 
     /**
      * Get the request host
-     * 
-     * @return string 
      */
     public static function host(): string
     {
@@ -358,8 +292,6 @@ class Request
 
     /**
      * Get the request origin
-     * 
-     * @return string 
      */
     public static function origin(): string
     {
@@ -373,8 +305,6 @@ class Request
 
     /**
      * Get the base url
-     * 
-     * @return string 
      */
     public static function baseUrl(): string
     {
@@ -383,8 +313,6 @@ class Request
 
     /**
      * Get the request subdomain
-     * 
-     * @return string 
      */
     public static function subdomain(): string
     {
@@ -399,16 +327,14 @@ class Request
 
     /**
      * Get the request path
-     * 
-     * @return string 
      */
     public static function path(): string
     {
         static $path = null;
         if ($path === null) {
             $path = $_SERVER['REQUEST_URI'] ?? '';
-            if (false !== $pos = strpos($path, '?')) {
-                $path = substr($path, 0, $pos);
+            if (false !== $pos = strpos((string) $path, '?')) {
+                $path = substr((string) $path, 0, $pos);
             }
         }
 

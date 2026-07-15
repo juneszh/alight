@@ -18,23 +18,22 @@ use RuntimeException;
 class Job
 {
     public static array $config = [];
+
     private static int $index = 0;
+
     public static int $startTime;
-    private const TIME_LIMIT = 3600;
+
+    private const int TIME_LIMIT = 3600;
 
     private function __construct() {}
-
-    private function __destruct() {}
 
     private function __clone() {}
 
 
     /**
      * Start run with fork process
-     * 
-     * @return never 
      */
-    public static function start()
+    public static function start(): never
     {
         $timezone = Config::get('app', 'timezone');
         if ($timezone) {
@@ -57,16 +56,16 @@ class Job
             $start = microtime(true);
             $childPid = 0;
             $childCount = 0;
-            foreach ($jobs as $_key => list($_handler, $_args, $_timeLimit)) {
+            foreach ($jobs as $_key => [$_handler, $_args, $_timeLimit]) {
                 $lockFile = $lockPath . '/' . str_replace('\\', '.', $_key) . '.lock';
                 if (file_exists($lockFile)) {
                     $lastProcess = @file_get_contents($lockFile);
                     if ($lastProcess) {
-                        list($lastPid, $lastTime, $lastLimit) = explode('|', $lastProcess);
+                        [$lastPid, $lastTime, $lastLimit] = explode('|', $lastProcess);
                         if (posix_kill((int)$lastPid, 0)) {
                             if ($lastLimit <= 0) {
                                 continue;
-                            } elseif (self::$startTime - $lastLimit <= $lastTime) {
+                            } elseif (self::$startTime - (int) $lastLimit <= (int) $lastTime) {
                                 $logger->warning($_handler, ['Last running', ['lastTime' => date('Y-m-d H:i:s', (int)$lastTime), 'timeLimit' => $lastLimit]]);
                                 continue;
                             } else {
@@ -86,6 +85,7 @@ class Job
                     if ($childCount === 0) {
                         $logger->info('', ['Start']);
                     }
+
                     ++$childCount;
                 } else {
                     // child process
@@ -97,13 +97,14 @@ class Job
                         $logger->info($_handler, array_merge(['Run'], $logData ? [$logData] : []));
 
                         $_start = microtime(true);
-                        call_user_func_array($_handler, $_args);
+                        $_handler(...$_args);
                         $logData['runTime'] = number_format((microtime(true) - $_start), 3);
 
-                        $logger->info($_handler, array_merge(['Done'], $logData ? [$logData] : []));
+                        $logger->info($_handler, ['Done', $logData]);
                     } else {
                         $logger->error($_handler, array_merge(['Missing handler'], $logData ? [$logData] : []));
                     }
+
                     // must break foreach in child process
                     break;
                 }
@@ -115,16 +116,17 @@ class Job
                 for ($i = 0; $i < $childCount; ++$i) {
                     pcntl_wait($status, 0);
                 }
+
                 $logger->info('', ['End', ['startTime' => date('Y-m-d H:i:s', self::$startTime), 'runTime' => number_format((microtime(true) - $start), 3)]]);
             }
         }
+
         exit;
     }
 
     /**
-     * Get the jobs to run this time 
-     * 
-     * @return array 
+     * Get the jobs to run this time
+     *
      */
     private static function getJobs(): array
     {
@@ -136,6 +138,7 @@ class Job
             if (!is_file($file)) {
                 throw new RuntimeException('Missing job file: ' . $file . '.');
             }
+
             require $file;
         }
 
@@ -164,13 +167,12 @@ class Job
     }
 
     /**
-     * Get the rules to run this time 
-     * 
-     * @return array 
+     * Get the rules to run this time
+     *
      */
     private static function getRules(): array
     {
-        list($Y, $m, $d, $w, $H, $i) = explode(' ', date('Y m d w H i', self::$startTime));
+        [$Y, $m, $d, $w, $H, $i] = explode(' ', date('Y m d w H i', self::$startTime));
 
         $rules = [
             '*' => true,
@@ -185,13 +187,13 @@ class Job
         ];
 
         for ($iSub = 2; $iSub <= 59; ++$iSub) {
-            if ($i % $iSub === 0) {
+            if ((int) $i % $iSub === 0) {
                 $rules['*/' . $iSub] = true;
             }
         }
 
         for ($hSub = 2; $hSub <= 23; ++$hSub) {
-            if ($H % $hSub === 0) {
+            if ((int) $H % $hSub === 0) {
                 $rules['*/' . $hSub . ':' . $i] = true;
             }
         }
@@ -201,12 +203,11 @@ class Job
 
     /**
      * Push a handler to scheduler (Default is minutely)
-     * 
-     * @param callable $handler 
-     * @param array $args
-     * @return JobOption 
+     *
+     * @param callable|string $handler
+     * @param array<int|string, mixed> $args
      */
-    public static function call($handler, array $args = []): JobOption
+    public static function call(mixed $handler, array $args = []): JobOption
     {
         ++self::$index;
         self::$config[self::$index] = [

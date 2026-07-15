@@ -15,33 +15,25 @@ namespace Alight;
 
 class RouteUtility
 {
-    private int $index;
-
-    public function __construct(int $index)
+    public function __construct(private readonly int $index)
     {
-        $this->index = $index;
-        return $this;
     }
 
     /**
-     * 
-     * @param callable $handler 
-     * @param array $args 
-     * @return RouteUtility 
+     *
+     * @param callable|string $handler
      */
-    public function before($handler, array $args = []): RouteUtility
+    public function before(mixed $handler, array $args = []): static
     {
         Route::$config[$this->index][__FUNCTION__][] = [$handler, $args];
         return $this;
     }
 
     /**
-     * 
-     * @param callable $handler 
-     * @param array $args 
-     * @return RouteUtility 
+     *
+     * @param callable|string $handler
      */
-    public function after($handler, array $args = []): RouteUtility
+    public function after(mixed $handler, array $args = []): static
     {
         Route::$config[$this->index][__FUNCTION__][] = [$handler, $args];
         return $this;
@@ -49,37 +41,28 @@ class RouteUtility
 
     /**
      * Enable authorization verification
-     * 
+     *
      * @param int $debounce set the interval seconds between 2 requests for each user
-     * @return RouteUtility 
      */
-    public function auth(int $debounce = 0): RouteUtility
+    public function auth(int $debounce = 0): static
     {
         return $this->before([Response::class, 'auth'], [$debounce]);
     }
 
     /**
      * Send a Cache-Control header
-     * 
-     * @param int $maxAge
-     * @param ?int $sMaxAge
-     * @param array $options 
-     * @return RouteUtility 
      */
-    public function cache(int $maxAge, ?int $sMaxAge = null, array $options = []): RouteUtility
+    public function cache(int $maxAge, ?int $sMaxAge = null, array $options = []): static
     {
         return $this->before([Response::class, 'cache'], [$maxAge, $sMaxAge, $options]);
     }
 
     /**
      * Set CORS header for current method and 'OPTIONS'
-     * 
-     * @param null|string|array $allowOrigin origin|*|{custom_origin}|[custom_origin1, custom_origin2] 
-     * @param null|array $allowHeaders 
-     * @param null|array $allowMethods 
-     * @return RouteUtility 
+     *
+     * @param list<string>|string|null $allowOrigin Use origin, *, one custom origin, or a list of origins.
      */
-    public function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null): RouteUtility
+    public function cors(mixed $allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null): static
     {
         Route::options(Route::$config[$this->index]['pattern'], [Response::class, 'cors'], [$allowOrigin, $allowHeaders, $allowMethods]);
         return $this->before([Response::class, 'cors'], [$allowOrigin, $allowHeaders, $allowMethods]);
@@ -87,10 +70,8 @@ class RouteUtility
 
     /**
      * Compress/minify the HTML
-     * 
-     * @return RouteUtility 
      */
-    public function minify(): RouteUtility
+    public function minify(): static
     {
         return $this->after([Response::class, 'minify']);
     }

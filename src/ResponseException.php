@@ -18,25 +18,16 @@ use Throwable;
 
 class ResponseException extends RuntimeException
 {
-    protected $statusCode;
-    protected ?string $body;
-
     /**
-     * 
-     * @param mixed $code 
-     * @param string $message 
-     * @param null|string $body html or redirect url
-     * @param null|Throwable $previous 
+     *
+     * @param string|null $body HTML response body or redirect URL.
      */
-    public function __construct($code, string $message = '', ?string $body = null, ?Throwable $previous = null)
+    public function __construct(protected mixed $statusCode, string $message = '', protected ?string $body = null, ?Throwable $previous = null)
     {
         parent::__construct($message, 0, $previous);
-
-        $this->statusCode = $code;
-        $this->body = $body;
     }
 
-    public function getStatusCode()
+    public function getStatusCode(): mixed
     {
         return $this->statusCode;
     }

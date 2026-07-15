@@ -1,0 +1,8 @@
+parameters:
+    level: 5
+    paths:
+        - src
+        - tests
+    tmpDir: /tmp/alight-phpstan
+    parallel:
+        maximumNumberOfProcesses: 1

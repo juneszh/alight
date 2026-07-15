@@ -24,7 +24,7 @@ class Response
      * 
      * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
      */
-    public const HTTP_STATUS = [
+    public const array HTTP_STATUS = [
         100 => 'Continue',
         101 => 'Switching Protocols',
         102 => 'Processing',
@@ -66,7 +66,7 @@ class Response
         415 => 'Unsupported Media Type',
         416 => 'Requested range not satisfiable',
         417 => 'Expectation Failed',
-        418 => 'I\'m a teapot',
+        418 => "I'm a teapot",
         421 => 'Misdirected Request',
         422 => 'Unprocessable Entity',
         423 => 'Locked',
@@ -93,7 +93,7 @@ class Response
     /**
      * Common cors headers
      */
-    private const CORS_HEADERS = [
+    private const array CORS_HEADERS = [
         'Content-Type',
         'Origin',
         'X-Requested-With',
@@ -101,12 +101,13 @@ class Response
     ];
 
     public static string $body = '';
+
     public static int $lastModified = 0;
 
     /** 
      * Initializes 
      */
-    public static function init()
+    public static function init(): void
     {
         self::$body = '';
         self::$lastModified = 0;
@@ -115,25 +116,20 @@ class Response
     /** 
      * Output body and lastModified
      */
-    public static function emitter()
+    public static function emitter(): void
     {
         $lastModified = self::$lastModified ?: time();
         header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $lastModified) . ' GMT');
 
-        if (!in_array(Request::method(), ['OPTIONS', 'HEAD'])) {
+        if (!in_array(Request::method(), ['OPTIONS', 'HEAD'], true)) {
             echo self::$body;
         }
     }
 
     /**
      * Api response template base json/jsonp format
-     * 
-     * @param mixed $code 
-     * @param null|string $message 
-     * @param null|array $data
-     * @param null|array $extraData
      */
-    public static function api($code, ?string $message = null, ?array $data = null, ?array $extraData = null)
+    public static function api(mixed $code, ?string $message = null, ?array $data = null, ?array $extraData = null): void
     {
         $status = isset(self::HTTP_STATUS[$code]) ? $code : 200;
         $json = [
@@ -165,19 +161,15 @@ class Response
 
     /**
      * Error page
-     * 
-     * @param mixed $code 
-     * @param null|string $message 
-     * @param null|array $data
      */
-    public static function errorPage($code, ?string $message = null, ?array $data = null)
+    public static function errorPage(mixed $code, ?string $message = null, ?array $data = null): void
     {
         $status = isset(self::HTTP_STATUS[$code]) ? $code : 200;
         header('Content-Type: text/html; charset=utf-8', true, $status);
 
         $errorPageHandler = Config::get('app', 'errorPageHandler');
         if (is_callable($errorPageHandler)) {
-            call_user_func_array($errorPageHandler, [$code, $message, $data]);
+            $errorPageHandler($code, $message, $data);
         } else {
             self::$body = '<h1>' . $code . ' ' . ($message ?: self::HTTP_STATUS[$status] ?? '') . '</h1>';
         }
@@ -185,12 +177,8 @@ class Response
 
     /**
      * Auto detect request type and output error api or page
-     * 
-     * @param mixed $code
-     * @param null|string $message 
-     * @param null|array $data
      */
-    public static function error(int $code, ?string $message = null, ?array $data = null)
+    public static function error(int $code, ?string $message = null, ?array $data = null): void
     {
         if (Request::isAjax() || Request::acceptJson()) {
             Response::api($code, $message, $data);
@@ -201,11 +189,8 @@ class Response
 
     /**
      * Simple template render
-     * 
-     * @param string $file 
-     * @param array $data 
      */
-    public static function render(string $file, array $data = [])
+    public static function render(string $file, array $data = []): void
     {
         header('Content-Type: text/html; charset=utf-8', true);
 
@@ -216,30 +201,25 @@ class Response
 
     /**
      * build template data
-     * 
-     * @param string $file 
-     * @param array $data 
      */
-    public static function template(string $file, array $data = [])
+    public static function template(string $file, array $data = []): void
     {
         $template = App::root($file);
         if (!file_exists($template)) {
-            throw new RuntimeException("Template file not found: {$template}.");
+            throw new RuntimeException(sprintf('Template file not found: %s.', $template));
         }
 
         if ($data) {
             extract($data);
         }
+
         require $template;
     }
 
     /**
      *  Sent a redirect header
-     * 
-     * @param string $url 
-     * @param int $status 
      */
-    public static function redirect(string $url, int $status = 303)
+    public static function redirect(string $url, int $status = 303): void
     {
         header('Location: ' . $url, true, $status);
     }
@@ -248,19 +228,21 @@ class Response
     /**
      * Authorization verification
      * 
-     * @param int $debounce $debounce set the interval seconds between 2 requests for each user
+     * @param int $debounce Minimum interval in seconds between two requests from the same user.
      */
-    public static function auth(int $debounce = 0)
+    public static function auth(int $debounce = 0): void
     {
         if (!isset(Router::$setting['cache'])) {
             self::cache(0);
         }
 
         if (Router::$setting['authHandler'] ?? []) {
-            $authId = call_user_func_array(Router::$setting['authHandler'][0], Router::$setting['authHandler'][1]);
+            $authHandler = Router::$setting['authHandler'][0];
+            $authId = $authHandler(...Router::$setting['authHandler'][1]);
             if (!$authId) {
                 throw new ResponseException(401);
             }
+
             Router::getAuthId($authId);
 
             if ($debounce) {
@@ -279,14 +261,11 @@ class Response
 
     /**
      * Send a set of Cache-Control headers
-     * 
-     * @param int $maxAge 
-     * @param ?int $sMaxAge 
-     * @param array $options 
+     *
      * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
      * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
      */
-    public static function cache(int $maxAge, ?int $sMaxAge = null, array $options = [])
+    public static function cache(int $maxAge, ?int $sMaxAge = null, array $options = []): void
     {
         if (!$maxAge && !$sMaxAge) {
             $cacheControl = ['no-cache'];
@@ -296,29 +275,31 @@ class Response
             if ($maxAge === 0) {
                 $cacheControl[] = 'must-revalidate';
             }
+
             if ($sMaxAge !== null) {
                 $cacheControl[] = 's-maxage=' . $sMaxAge;
                 if ($sMaxAge === 0) {
                     $cacheControl[] = 'proxy-revalidate';
                 }
             }
+
             header_remove('Pragma');
         }
+
         if ($options) {
             $cacheControl = array_unique(array_merge($cacheControl, $options));
         }
+
         header('Cache-Control: ' . join(', ', $cacheControl));
     }
 
 
     /**
      * Send a set of CORS headers
-     * 
-     * @param null|string|array $allowOrigin 
-     * @param null|array $allowHeaders 
-     * @param null|array $allowMethods 
+     *
+     * @param list<string>|string|null $allowOrigin
      */
-    public static function cors($allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null)
+    public static function cors(mixed $allowOrigin, ?array $allowHeaders = null, ?array $allowMethods = null): void
     {
         $origin = Request::origin();
         if ($allowOrigin && $origin) {
@@ -327,7 +308,7 @@ class Response
             if ($originHost && $originHost !== $host) {
                 if (is_array($allowOrigin)) {
                     foreach ($allowOrigin as $domain) {
-                        if ($domain && substr($originHost, -strlen($domain)) === $domain) {
+                        if ($domain && str_ends_with($originHost, (string) $domain)) {
                             $allowOrigin = $origin;
                             break;
                         }
@@ -336,7 +317,7 @@ class Response
                     $allowOrigin = '*';
                 } elseif ($allowOrigin === 'origin') {
                     $allowOrigin = $origin;
-                } elseif ($allowOrigin && substr($originHost, -strlen($allowOrigin)) === $allowOrigin) {
+                } elseif (str_ends_with($originHost, $allowOrigin)) {
                     $allowOrigin = $origin;
                 } else {
                     $allowOrigin = null;
@@ -363,11 +344,12 @@ class Response
     /**
      * body minify
      */
-    public static function minify()
+    public static function minify(): void
     {
         $htmlMin = new HtmlMin();
         $htmlMin->doRemoveOmittedQuotes(false);
         $htmlMin->doRemoveOmittedHtmlTags(false);
+
         Response::$body = $htmlMin->minify(Response::$body);
     }
 }

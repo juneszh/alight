@@ -20,21 +20,14 @@ use Throwable;
 
 class Log
 {
-    public static $instance = [];
+    public static array $instance = [];
 
     private function __construct() {}
-
-    private function __destruct() {}
 
     private function __clone() {}
 
     /**
      * Initializes the instance
-     * 
-     * @param string $logName 
-     * @param int $maxFiles 
-     * @param null|int $filePermission 
-     * @return Logger 
      */
     public static function init(string $logName, int $maxFiles = 7, ?int $filePermission = null): Logger
     {
@@ -54,16 +47,15 @@ class Log
 
     /**
      * Default error log
-     * 
-     * @param Throwable $t 
      */
-    public static function error(Throwable $t)
+    public static function error(Throwable $t): void
     {
         $logger = self::init('error/alight');
         $trace = $t->getTrace();
         if (isset($_SERVER['REQUEST_URI'])) {
             array_unshift($trace, ['host' => $_SERVER['HTTP_HOST'] ?? '', 'uri' => $_SERVER['REQUEST_URI']]);
         }
+
         $logger->error($t->getMessage(), $trace);
     }
 }

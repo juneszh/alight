@@ -22,12 +22,16 @@ use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Adapter\RedisTagAwareAdapter;
 use Symfony\Component\Cache\Adapter\TagAwareAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapterInterface;
+use Symfony\Component\Cache\PruneableInterface;
 use Symfony\Component\Cache\Psr16Cache;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class Cache
 {
     public static array $instance = [];
-    private const DEFAULT_CONFIG = [
+
+    private const array DEFAULT_CONFIG = [
         'type' => '',
         'dsn' => '',
         'option' => [],
@@ -37,15 +41,10 @@ class Cache
 
     private function __construct() {}
 
-    private function __destruct() {}
-
     private function __clone() {}
 
     /**
      * Initializes the instance (psr16 alias)
-     * 
-     * @param string $configKey 
-     * @return Psr16Cache 
      */
     public static function init(string $configKey = ''): Psr16Cache
     {
@@ -54,9 +53,6 @@ class Cache
 
     /**
      * Initializes the psr16 instance
-     * 
-     * @param string $configKey 
-     * @return Psr16Cache 
      */
     public static function psr16(string $configKey = ''): Psr16Cache
     {
@@ -72,11 +68,8 @@ class Cache
 
     /**
      * Initializes the psr6 instance with tags
-     * 
-     * @param string $configKey 
-     * @return TagAwareAdapter 
      */
-    public static function psr6(string $configKey = '')
+    public static function psr6(string $configKey = ''): TagAwareAdapterInterface&CacheInterface
     {
         if (isset(self::$instance[$configKey][__FUNCTION__])) {
             $psr6Cache = self::$instance[$configKey][__FUNCTION__];
@@ -97,11 +90,13 @@ class Cache
                     if (!is_callable($customCacheAdapter)) {
                         throw new LogicException('Invalid cacheAdapter specified.');
                     }
-                    $psr6Cache = new TagAwareAdapter(call_user_func($customCacheAdapter, $config));
+
+                    $psr6Cache = new TagAwareAdapter($customCacheAdapter($config));
                 }
             } else {
                 $psr6Cache = new TagAwareAdapter(new NullAdapter);
             }
+
             self::$instance[$configKey][__FUNCTION__] = $psr6Cache;
         }
 
@@ -110,9 +105,6 @@ class Cache
 
     /**
      * Initializes the memcached client
-     * 
-     * @param string $configKey 
-     * @return Memcached 
      */
     public static function memcached(string $configKey = 'memcached'): Memcached
     {
@@ -121,19 +113,18 @@ class Cache
         } else {
             $config = self::getConfig($configKey);
             if ($config['type'] !== 'memcached') {
-                throw new LogicException('Incorrect type in cache configuration \'' . $configKey . '\'.');
+                throw new LogicException("Incorrect type in cache configuration '" . $configKey . "'.");
             }
+
             $client = MemcachedAdapter::createConnection($config['dsn'], $config['option']);
             self::$instance[$configKey]['client'] = $client;
         }
+
         return $client;
     }
 
     /**
      * Initializes the redis client
-     * 
-     * @param string $configKey 
-     * @return Redis 
      */
     public static function redis(string $configKey = 'redis'): Redis
     {
@@ -142,19 +133,18 @@ class Cache
         } else {
             $config = self::getConfig($configKey);
             if ($config['type'] !== 'redis') {
-                throw new LogicException('Incorrect type in cache configuration \'' . $configKey . '\'.');
+                throw new LogicException("Incorrect type in cache configuration '" . $configKey . "'.");
             }
+
             $client = RedisAdapter::createConnection($config['dsn'], $config['option']);
             self::$instance[$configKey]['client'] = $client;
         }
+
         return $client;
     }
 
     /**
      * Get config values
-     * 
-     * @param string $configKey 
-     * @return array 
      */
     private static function getConfig(string $configKey): array
     {
@@ -168,7 +158,7 @@ class Cache
         } else {
             if ($configKey) {
                 if (!isset($config[$configKey]) || !is_array($config[$configKey])) {
-                    throw new LogicException('Missing cache configuration about \'' . $configKey . '\'.');
+                    throw new LogicException("Missing cache configuration about '" . $configKey . "'.");
                 }
             } else {
                 $configKey = key($config);
@@ -176,6 +166,7 @@ class Cache
                     throw new LogicException('Missing cache configuration.');
                 }
             }
+
             $configCache = $config[$configKey];
         }
 
@@ -184,20 +175,23 @@ class Cache
 
     /**
      * Pruning expired cache items
-     * 
-     * @param array $types 
+     *
      * @see https://symfony.com/doc/current/components/cache/cache_pools.html#component-cache-cache-pool-prune
      */
-    public static function prune(array $types = ['file'])
+    public static function prune(array $types = ['file']): void
     {
         $config = Config::get('cache');
         if ($config && is_array($config)) {
             if (isset($config['type'])) {
                 $config = ['' => $config];
             }
+
             foreach ($config as $_key => $_config) {
                 if (in_array($_config['type'] ?? '', $types)) {
-                    self::psr6($_key)->prune();
+                    $cache = self::psr6($_key);
+                    if ($cache instanceof PruneableInterface) {
+                        $cache->prune();
+                    }
                 }
             }
         }

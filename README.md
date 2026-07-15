@@ -10,7 +10,8 @@ Alight is a lightweight PHP framework that makes it easy to build high-performan
 | [Alight-Project](https://github.com/juneszh/alight-project) | A template for beginner to easily create web applications by Alight/Alight-Admin. |
 
 ## Requirements
-PHP 7.4+
+
+PHP 8.3+
 
 ## Getting Started
 * [Installation](#installation)
@@ -36,7 +37,7 @@ The project template contains common folder structure, suitable for MVC pattern,
 *It is easy to customize folders by modifying the configuration. But the following tutorials are based on the template configuration.*
 
 ### Step 3: Configuring a Web Server
-Nginx example (Nginx 1.17.10, PHP 7.4.3, Ubuntu 20.04.3):
+Nginx example (Nginx 1.24.0, PHP 8.3.6, Ubuntu 24.04.4):
 ```nginx
 server {
     listen 80;
@@ -54,13 +55,13 @@ server {
 
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+        fastcgi_pass unix:/var/run/php/php-fpm.sock;
     }
 }
 ```
 
 ## Configuration
-All of the configuration options for the Alight framework will be imported from the file 'config/app.php', which you need to create yourself. For example:
+Alight loads its application configuration from `config/app.php`. Alight-Project creates this file from `config/app.example.php` during installation. For example:
 
 File: config/app.php
 ```php
@@ -117,9 +118,9 @@ File: config/app.php
 <?php
 
 return [
-    'route' => 'config/route/web.php'
+    'route' => 'config/route/web.php',
     // Also supports multiple files
-    // 'route' => ['config/route/web.php', config/route/api.php'] 
+    // 'route' => ['config/route/web.php', 'config/route/api.php'],
 ];
 ```
 
@@ -218,7 +219,7 @@ Alight\Route::disableCache();
 #### Life cycle
 All routing options only take effect in the current file and will be auto reset by `Alight\Route::init()` before the next file is imported. For example:
 
-File: config/admin.php
+File: config/route/admin.php
 ```php
 Alight\Route::group('admin');
 Alight\Route::setAnyMethods(['GET', 'POST']);
@@ -227,7 +228,7 @@ Alight\Route::setAnyMethods(['GET', 'POST']);
 Alight\Route::any('login', 'handler');
 ```
 
-File: config/web.php
+File: config/route/web.php
 ```php
 // Matches '/login' by methods 'GET', 'POST', 'PUT', 'DELETE', etc
 Alight\Route::any('login', 'handler');
@@ -267,7 +268,7 @@ namespace svc;
 
 class Auth
 {
-    public static function verify()
+    public static function verify(): mixed
     {
         // Some codes about get user session from cookie or anywhere
         // Returns the user id if authorization is valid
@@ -296,7 +297,7 @@ Alight\Route::put('share/specified', 'handler')->cors('abc.com');
 Alight\Route::put('share/config', 'handler')->cors(['abc.com', 'def.com']); 
 
 // The specified domain will receive the specified cors header
-Alight\Route::put('share/specified2', 'handler')->cors('abc.com', 'Authorization', ['GET', 'POST']);
+Alight\Route::put('share/specified2', 'handler')->cors('abc.com', ['Authorization'], ['GET', 'POST']);
 
 // All domains will receive a 'Access-Control-Allow-Origin: *' header
 Alight\Route::put('share/all/http', 'handler')->cors('*'); 
@@ -364,7 +365,7 @@ $result->rowCount();
 See [Medoo Documentation](https://medoo.in/doc) for usage details.
 
 ## Caching
-Alight supports multiple cache drivers and multiple cache interfaces with **symfony/cache**. The configuration options 'dsn' and 'options' will be passed to the cache adapter, more details please refer to [Available Cache Adapters](https://symfony.com/doc/current/components/cache.html#available-cache-adapters). For example:
+Alight supports multiple cache drivers and multiple cache interfaces with **symfony/cache**. The configuration options `dsn` and `option` are passed to the cache adapter. See [Available Cache Adapters](https://symfony.com/doc/current/components/cache.html#available-cache-adapters) for details. For example:
 
 File: config/app.php
 ```php
@@ -472,22 +473,21 @@ File: app/service/Cache.php
 namespace svc;
 
 use Symfony\Component\Cache\Adapter\ApcuAdapter;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\NullAdapter;
 
 class Cache
 {
-    public static function adapter(array $config)
+    public static function adapter(array $config): AdapterInterface
     {
         switch ($config['type']) {
             case 'apcu':
                 return new ApcuAdapter();
-                break;
             case 'array':
                 return new ArrayAdapter($config['defaultLifetime']);
             default:
                 return new NullAdapter();
-                break;
         }
     }
 }
@@ -531,14 +531,16 @@ File: app/service/Error.php
 ```php
 namespace svc;
 
+use Throwable;
+
 class Error
 {
-    public static function catch(Throwable $exception)
+    public static function catch(Throwable $exception): void
     {
         // Some code like sending an email or using Sentry or something
     }
 
-    public static function page(int $status)
+    public static function page(int $status, ?string $message = null, ?array $data = null): void
     {
         switch ($status) {
             case 400:
@@ -583,9 +585,9 @@ File: config/job.php
 Alight\Job::call('handler')->minutely();
 Alight\Job::call('handler')->hourly();
 Alight\Job::call('handler')->daily();
-Alight\Job::call('handler')->weekly();
-Alight\Job::call('handler')->monthly();
-Alight\Job::call('handler')->yearly();
+Alight\Job::call('handler')->weekly(1); // Monday
+Alight\Job::call('handler')->monthly(1); // First day of each month
+Alight\Job::call('handler')->yearly(1, 1); // January 1
 Alight\Job::call('handler')->everyMinutes(5);
 Alight\Job::call('handler')->everyHours(2);
 Alight\Job::call('handler')->date('2022-08-02 22:00');
@@ -610,12 +612,10 @@ Alight provides `Alight\App::root()` to standardize the format of file paths in 
 \Alight\App::root('/var/data/config/web.php');
 ```
 
-The file paths in the configuration are all based on the `Alight\App::root()`. For example:
+Relative file paths in the configuration are resolved from the project root by `Alight\App::root()`. For example:
 ```php
-Alight\App::start([
-    'route' => 'config/route/web.php',     // /var/www/my_project/config/route/web.php
-    'job' => 'config/job.php'          // /var/www/my_project/config/job.php
-]);
+\Alight\App::root('config/route/web.php'); // /var/www/my_project/config/route/web.php
+\Alight\App::root('config/job.php');       // /var/www/my_project/config/job.php
 ```
 ### API Response
 Alight provides `Alight\Response::api()` to standardize the format of API Response. 
@@ -625,7 +625,7 @@ HTTP 200 OK
 {
     "error": 0,      // API error code
     "message": "OK", // API status description
-    "data": {}       // Object data
+    "data": {}       // Optional response data
 }
 ```
 Status Definition:
@@ -657,8 +657,7 @@ For example:
 //
 // {
 //     "error": 1001,
-//     "message": "Invalid request parameter.",
-//     "data": {}
+//     "message": "Invalid request parameter."
 // }
 
 \Alight\Response::api(500, 'Unable to connect database.');
@@ -667,8 +666,7 @@ For example:
 //
 // {
 //     "error": 500,
-//     "message": "Unable to connect database.",
-//     "data": {}
+//     "message": "Unable to connect database."
 // }
 ```
 
@@ -677,14 +675,19 @@ For example:
 ### Views
 Alight provides `Alight\Response::render()` to render a view template. Call `render` with the template file path and optional template data.
 
-File: app/controller/Pages.php
+File: app/controller/Page.php
 ```php
+<?php
+
+declare(strict_types=1);
+
 namespace ctr;
-class Pages
+
+class Page
 {
-    public static function index()
+    public static function index(): void
     {
-        \Alight\Response::render('hello.php', ['name' => 'Ben']);
+        \Alight\Response::render('app/view/hello.php', ['name' => 'Ben']);
     }
 }
 ```
@@ -696,7 +699,7 @@ File: app/view/hello.php
 
 File: config/route/web.php
 ```php
-Alight\Route::get('/', [ctr\Pages::class, 'index']);
+Alight\Route::get('/', [\ctr\Page::class, 'index']);
 ```
 
 The project's homepage output would be:
@@ -712,6 +715,33 @@ There are also some useful helpers placed in different namespaces. Please click 
 | Alight\Request  | [Request.php](./src/Request.php)   |
 | Alight\Response | [Response.php](./src/Response.php) |
 | Alight\Utility  | [Utility.php](./src/Utility.php)   |
+
+## Development
+
+Install development dependencies and run the complete validation suite:
+
+```bash
+$ composer install
+$ composer check
+```
+
+The check command validates Composer metadata, checks PHP syntax, and runs the
+PHPUnit suite. Individual commands are also available:
+
+```bash
+$ composer lint
+$ composer analyse
+$ composer test
+```
+
+Alight supports both cache dependency lines:
+
+| PHP | Symfony Cache |
+| --- | --- |
+| 8.3 | 7.4 LTS |
+| 8.4.1+ | 8.x |
+
+Continuous integration runs the same tests against both combinations.
 
 ## Credits
 * Composer requires

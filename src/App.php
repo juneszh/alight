@@ -18,7 +18,7 @@ class App
     /**
      * Starts the framework
      */
-    public static function start()
+    public static function start(): void
     {
         $timezone = Config::get('app', 'timezone');
         if ($timezone) {
@@ -32,21 +32,19 @@ class App
 
     /**
      * Get a path relative to project's root
-     * 
+     *
      * @param string $path Relative to file system's root when first character is '/'
-     * @return string 
      */
-    public static function root(string $path = ''): ?string
+    public static function root(string $path = ''): string
     {
-        if ($path === null) {
-            return null;
-        } elseif (($path[0] ?? '') === '/') {
+        if (($path[0] ?? '') === '/') {
             return rtrim($path, '/');
         } else {
             static $rootPath = null;
             if ($rootPath === null) {
                 $rootPath = dirname(__DIR__, 4);
             }
+
             return $rootPath . '/' . rtrim($path, '/');
         }
     }

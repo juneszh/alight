@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: "8.3"
+            platform: "8.3.0"
+            expected_cache_major: "7"
+          - php: "8.4"
+            platform: "8.4.1"
+            expected_cache_major: "8"
+
+    name: PHP ${{ matrix.php }} / Symfony Cache ${{ matrix.expected_cache_major }}
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: Select dependency platform
+        run: composer config platform.php ${{ matrix.platform }}
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-interaction
+      - name: Verify Symfony Cache major version
+        env:
+          EXPECTED_CACHE_MAJOR: ${{ matrix.expected_cache_major }}
+        run: php -r 'require "vendor/autoload.php"; $version = Composer\InstalledVersions::getVersion("symfony/cache"); exit(str_starts_with($version, getenv("EXPECTED_CACHE_MAJOR") . ".") ? 0 : 1);'
+      - name: Audit dependencies
+        run: composer audit --locked --no-interaction
+      - name: Run checks
+        run: composer check

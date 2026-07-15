@@ -15,6 +15,7 @@ namespace Alight;
 
 use Whoops\Run;
 use Whoops\Exception\Formatter;
+use Whoops\Exception\Inspector;
 use Whoops\Handler\Handler;
 use Whoops\Handler\PrettyPageHandler;
 
@@ -23,7 +24,7 @@ class ErrorHandler
     /**
      * Initializes error handler
      */
-    public static function start()
+    public static function start(): void
     {
         $whoops = new Run;
 
@@ -31,7 +32,7 @@ class ErrorHandler
             if (Config::get('app', 'debug')) {
                 if (Request::isAjax() || Request::acceptJson()) {
                     $whoops->sendHttpCode(false);
-                    $whoops->pushHandler(function ($exception, $inspector, $run) {
+                    $whoops->pushHandler(function (\Throwable $exception, Inspector $inspector, Run $run): int {
                         Response::api(500, null, Formatter::formatExceptionAsDataArray($inspector, false));
                         Response::emitter();
                         return Handler::QUIT;
@@ -41,7 +42,7 @@ class ErrorHandler
                 }
             } else {
                 $whoops->sendHttpCode(false);
-                $whoops->pushHandler(function ($exception, $inspector, $run) {
+                $whoops->pushHandler(function (\Throwable $exception, Inspector $inspector, Run $run): int {
                     Response::error(500);
                     Response::emitter();
                     return Handler::QUIT;
@@ -49,13 +50,14 @@ class ErrorHandler
             }
         }
 
-        $whoops->pushHandler(function ($exception, $inspector, $run) {
+        $whoops->pushHandler(function (\Throwable $exception, Inspector $inspector, Run $run): int {
             $errorHandler = Config::get('app', 'errorHandler');
             if (is_callable($errorHandler)) {
-                call_user_func_array($errorHandler, [$exception]);
+                $errorHandler($exception);
             } else {
                 Log::error($exception);
             }
+
             return Handler::DONE;
         });
 

@@ -22,8 +22,6 @@ class Router
 {
     private function __construct() {}
 
-    private function __destruct() {}
-
     private function __clone() {}
 
     public static array $setting = [];
@@ -31,14 +29,14 @@ class Router
     /**
      * Router start
      */
-    public static function start()
+    public static function start(): void
     {
         self::$setting = [];
         Response::init();
 
         $routeResult = self::dispatch(self::configFiles(), Request::method(), rtrim(Request::path(), '/'));
         if (!$routeResult || $routeResult[0] !== Dispatcher::FOUND) {
-            if (in_array(Request::method(), ['OPTIONS', 'HEAD'])) {
+            if (in_array(Request::method(), ['OPTIONS', 'HEAD'], true)) {
                 http_response_code(404);
             } else {
                 Response::error(404);
@@ -54,21 +52,26 @@ class Router
                 self::$setting['after'] ?? [],
                 self::$setting['afterGlobal'] ?? []
             );
-            foreach ($queue as $_hander) {
+            foreach ($queue as $_handlerData) {
                 try {
-                    call_user_func_array($_hander[0], $_hander[1]);
+                    $_handler = $_handlerData[0];
+                    $_handler(...$_handlerData[1]);
                 } catch (ResponseException $e) {
                     $code = $e->getStatusCode();
                     $status = isset(Response::HTTP_STATUS[$code]) ? $code : 200;
-                    if ($e->getBody() !== null) {
-                        http_response_code($status);
-                        Response::$body = $e->getBody();
-                    } elseif (in_array($status, [300, 301, 302, 303, 307, 308])) {
-                        Response::redirect($e->getBody(), $status);
-                        Response::$body = '';
+                    $body = $e->getBody();
+                    if ($body !== null) {
+                        if (in_array($status, [300, 301, 302, 303, 307, 308], true)) {
+                            Response::redirect($body, $status);
+                            Response::$body = '';
+                        } else {
+                            http_response_code($status);
+                            Response::$body = $body;
+                        }
                     } else {
                         Response::error($code, $e->getMessage() ?: null);
                     }
+
                     break;
                 }
             }
@@ -80,8 +83,6 @@ class Router
 
     /**
      * Get the route configuration files
-     * 
-     * @return array 
      */
     private static function configFiles(): array
     {
@@ -119,25 +120,21 @@ class Router
     }
 
     /**
-     * Get the results from FastRoute dispatcher 
-     * 
-     * @param array $configFiles 
-     * @param string $method 
-     * @param string $path 
-     * @return array 
+     * Get the results from FastRoute dispatcher
+     *
      */
     private static function dispatch(array $configFiles, string $method, string $path = ''): array
     {
         $result = [];
 
-        if ($configFiles && in_array($method, Request::ALLOW_METHODS)) {
+        if ($configFiles && in_array($method, Request::ALLOW_METHODS, true)) {
             foreach ($configFiles as $_configFile) {
-                $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename($_configFile, '.php') . '/' . filemtime($_configFile);
+                $configStorage = App::root(Config::get('app', 'storagePath') ?: 'storage') . '/route/' . basename((string) $_configFile, '.php') . '/' . filemtime($_configFile);
                 if (!is_dir($configStorage) && !@mkdir($configStorage, 0777, true)) {
                     throw new RuntimeException('Failed to create route directory.');
                 }
 
-                $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) use ($method, $_configFile, $configStorage) {
+                $dispatcher = FastRoute\cachedDispatcher(function (RouteCollector $r) use ($method, $_configFile, $configStorage): void {
                     Route::init();
                     require $_configFile;
                     foreach (Route::$config as $_route) {
@@ -156,12 +153,13 @@ class Router
                     if ($oldCacheDirs) {
                         $latestTime = substr($configStorage, -10);
                         foreach ($oldCacheDirs as $_oldDir) {
-                            if (substr($_oldDir, -10) !== $latestTime) {
+                            if (!str_ends_with($_oldDir, $latestTime)) {
                                 foreach (Request::ALLOW_METHODS as $_method) {
                                     if (is_file($_oldDir . '/' . $_method . '.php')) {
                                         @unlink($_oldDir . '/' . $_method . '.php');
                                     }
                                 }
+
                                 @rmdir($_oldDir);
                             }
                         }
@@ -183,24 +181,21 @@ class Router
 
     /**
      * Get authorized user id
-     * 
-     * @param mixed $setId
-     * @return mixed 
      */
-
-    public static function getAuthId($setId = null)
+    public static function getAuthId(mixed $setId = null): mixed
     {
         static $authId = null;
         if ($setId !== null) {
             $authId = $setId;
         }
+
         return $authId;
     }
 
     /**
      * Clear route cache
      */
-    public static function clearCache()
+    public static function clearCache(): void
     {
         if (PHP_SAPI !== 'cli') {
             throw new RuntimeException('PHP-CLI required.');

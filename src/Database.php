@@ -23,15 +23,10 @@ class Database
 
     private function __construct() {}
 
-    private function __destruct() {}
-
     private function __clone() {}
 
     /**
      * Initializes the instance
-     * 
-     * @param string $configKey 
-     * @return Medoo 
      */
     public static function init(string $configKey = ''): Medoo
     {
@@ -42,11 +37,6 @@ class Database
                 $config['error'] = PDO::ERRMODE_EXCEPTION;
             }
 
-            if ($config['type'] === 'mysql' && version_compare(PHP_VERSION, '8.1.0', '<')) {
-                $config['option'][PDO::ATTR_EMULATE_PREPARES] = false;
-                $config['option'][PDO::ATTR_STRINGIFY_FETCHES] = false;
-            }
-
             self::$instance[$configKey] = new Medoo($config);
         }
 
@@ -55,9 +45,6 @@ class Database
 
     /**
      * Get config values
-     * 
-     * @param string $configKey 
-     * @return array 
      */
     private static function getConfig(string $configKey): array
     {
@@ -71,7 +58,7 @@ class Database
         } else {
             if ($configKey) {
                 if (!isset($config[$configKey]) || !is_array($config[$configKey])) {
-                    throw new LogicException('Missing database configuration about \'' . $configKey . '\'.');
+                    throw new LogicException("Missing database configuration about '" . $configKey . "'.");
                 }
             } else {
                 $configKey = key($config);
@@ -79,6 +66,7 @@ class Database
                     throw new LogicException('Missing database configuration.');
                 }
             }
+
             $configDatabase = $config[$configKey];
         }
 

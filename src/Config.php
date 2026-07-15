@@ -17,8 +17,10 @@ use RuntimeException;
 
 class Config
 {
-    public const FILE = 'config/app.php';
+    public const string FILE = 'config/app.php';
+
     private static array $config = [];
+
     private static array $default = [
         'app' => [
             'debug' => false, // Whether to enable error message output
@@ -94,10 +96,8 @@ class Config
 
     /**
      * Merge default configuration and user configuration
-     * 
-     * @return array 
      */
-    private static function init()
+    private static function init(): array
     {
         $configFile = App::root(self::FILE);
         if (!file_exists($configFile)) {
@@ -111,11 +111,8 @@ class Config
 
     /**
      * Get config values
-     * 
-     * @param string[] $keys 
-     * @return mixed 
      */
-    public static function get(string ...$keys)
+    public static function get(string ...$keys): mixed
     {
         if (!self::$config) {
             self::$config = self::init();
@@ -138,12 +135,8 @@ class Config
 
     /**
      * Set config values
-     * 
-     * @param string $class 
-     * @param null|string $option 
-     * @param mixed $value 
      */
-    public static function set(string $class, ?string $option, $value)
+    public static function set(string $class, ?string $option, mixed $value): void
     {
         if (!self::$config) {
             self::$config = self::init();
