@@ -42,7 +42,8 @@ jobs:
       - name: Verify Symfony Cache major version
         env:
           EXPECTED_CACHE_MAJOR: ${{ matrix.expected_cache_major }}
-        run: php -r 'require "vendor/autoload.php"; $version = Composer\InstalledVersions::getVersion("symfony/cache"); exit(str_starts_with($version, getenv("EXPECTED_CACHE_MAJOR") . ".") ? 0 : 1);'
+        run: >-
+          php -r 'require "vendor/autoload.php"; $version = Composer\InstalledVersions::getVersion("symfony/cache"); exit(str_starts_with($version, getenv("EXPECTED_CACHE_MAJOR") . ".") ? 0 : 1);'
       - name: Audit dependencies
         run: composer audit --locked --no-interaction
       - name: Run checks
