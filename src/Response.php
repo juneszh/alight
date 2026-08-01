@@ -268,7 +268,7 @@ class Response
     public static function cache(int $maxAge, ?int $sMaxAge = null, array $options = []): void
     {
         if (!$maxAge && !$sMaxAge) {
-            $cacheControl = ['no-cache'];
+            $cacheControl = ['no-cache', 'no-store'];
             header('Pragma: no-cache');
         } else {
             $cacheControl = ['max-age=' . $maxAge];
